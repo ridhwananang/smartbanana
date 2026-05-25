@@ -167,7 +167,7 @@ test('scan controller supports multi food detection and stores all items in data
 
     // Mock the HTTP request to the AI model
     Http::fake([
-        '127.0.0.1:7860/predict' => Http::response([
+        'https://galihkjaya-nutrivision-api.hf.space/predict' => Http::response([
             'brand' => 'mcd',
             'brand_score' => 0.99,
             'items' => [

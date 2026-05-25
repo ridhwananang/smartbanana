@@ -138,20 +138,7 @@ class ScanController extends Controller
         $filePath = $image->getPathname();
         $fileName = $image->getClientOriginalName();
 
-        // 1. Coba port lokal 7860 dulu (jika user menjalankan inference.py secara lokal)
-        try {
-            $response = Http::timeout(5)
-                ->attach('file', file_get_contents($filePath), $fileName)
-                ->post('http://127.0.0.1:7860/predict');
-
-            if ($response->successful()) {
-                return $this->parseResponse($response->json());
-            }
-        } catch (\Exception $e) {
-            // Abaikan error lokal, lanjut ke fallback cloud
-        }
-
-        // 2. Fallback: Panggil API cloud Hugging Face
+        // Panggil API cloud Hugging Face secara langsung
         try {
             $response = Http::timeout(30)
                 ->attach('file', file_get_contents($filePath), $fileName)
@@ -167,7 +154,7 @@ class ScanController extends Controller
 
         } catch (\Exception $e) {
             return [
-                ['error' => 'Error koneksi AI: ' . $e->getMessage() . '. Pastikan Space hf.co aktif atau jalankan "python inference.py" secara lokal.']
+                ['error' => 'Error koneksi AI: ' . $e->getMessage() . '. Pastikan Space hf.co aktif.']
             ];
         }
     }
