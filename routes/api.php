@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\StatsController;     // ← tambah
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
+Route::post('/chat',     [App\Http\Controllers\ChatController::class, 'chat'])->middleware('throttle:30,1');
 Route::get('/nutrition',        [NutritionController::class, 'index']);
 Route::get('/nutrition/search', [NutritionController::class, 'search']);
 Route::get('/nutrition/{key}',  [NutritionController::class, 'show']);

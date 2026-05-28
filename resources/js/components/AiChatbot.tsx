@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { Sparkles, X, Send, Bot, User, CornerDownLeft, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -15,7 +16,7 @@ export default function AiChatbot() {
         {
             id: '1',
             sender: 'ai',
-            text: 'Halo! Saya **NutriBot**, asisten gizi cerdas visual Anda. 🥗 Ada yang bisa saya bantu hari ini?\n\nAnda bisa bertanya tentang cara kerja pemindai makanan visual AI, kalori kuliner Indonesia, atau tips hidup bugar!',
+            text: 'Halo! Saya **NutriBot**, asisten gizi cerdas Anda. 🥗 Ada yang bisa saya bantu hari ini?\n\nAnda bisa bertanya tentang cara kerja pemindai makanan visual AI, kalori kuliner Indonesia, atau tips hidup bugar!',
             timestamp: new Date()
         }
     ]);
@@ -31,33 +32,14 @@ export default function AiChatbot() {
     }, [messages, isTyping]);
 
     const quickPrompts = [
+        'Bagaimana cara kerja NutriVision?',
         'Berapa kalori Nasi Goreng? 🍳',
         'Bagaimana cara kerja visual scan AI? 📸',
         'Beri tips diet defisit kalori 🥑',
         'Makanan lokal tinggi protein? 🍗'
     ];
 
-    // Basis pengetahuan respons konsultasi gizi lokal
-    const getAiResponse = (userInput: string): string => {
-        const input = userInput.toLowerCase();
-        
-        if (input.includes('nasi goreng')) {
-            return 'Satu porsi **Nasi Goreng** standar (sekitar 250 gram) diperkirakan memiliki kandungan gizi sebagai berikut:\n\n• **Kalori:** ~350 - 450 kkal\n• **Karbohidrat:** ~50g\n• **Lemak:** ~18g\n• **Protein:** ~8g\n\n*Tips NutriVision:* Nasi goreng cenderung tinggi lemak karena minyak goreng. Cobalah tambahkan dada ayam suwir atau putih telur rebus untuk menaikkan kandungan protein harian Anda! 🍳';
-        }
-        if (input.includes('visual scan') || input.includes('cara kerja') || input.includes('kamera') || input.includes('pindai')) {
-            return 'Teknologi **Visual Scan AI** di NutriVision memanfaatkan model vision-language canggih berbasis Artificial Intelligence. 📸\n\nCara kerjanya mudah:\n1. Jepret makanan Anda langsung lewat kamera atau unggah file.\n2. AI mengenali jenis masakan Indonesia & porsinya.\n3. Gizi & makronutrisi harian Anda dihitung instan & dicatat ke database dashboard Anda!';
-        }
-        if (input.includes('defisit kalori') || input.includes('diet') || input.includes('sehat') || input.includes('bugar')) {
-            return 'Untuk **Diet Defisit Kalori** yang sehat & aman:\n\n1. Hitung kebutuhan kalori harian Anda (TDEE).\n2. Kurangi secara bertahap sekitar **300 - 500 kkal** di bawah kalori harian Anda.\n3. Pastikan asupan protein tetap tercukupi (1.5g per kg berat badan) agar massa otot terjaga.\n4. Gunakan pemindai AI NutriVision secara teratur untuk memonitor margin kalori tersisa Anda!';
-        }
-        if (input.includes('protein') || input.includes('tinggi protein') || input.includes('lokal')) {
-            return 'Berikut adalah sumber pangan lokal Indonesia yang **tinggi protein, terjangkau, dan sangat sehat**:\n\n• **Tempe & Tahu:** Pangan nabati super (~18g protein per 100g tempe).\n• **Dada Ayam:** Rendah lemak (~31g protein per 100g).\n• **Telur Ayam:** Mudah diolah (~6g protein per butir).\n• **Ikan Kembung:** Kaya omega-3 dan protein (~21g protein per 100g).\n\nSemuanya sangat bagus untuk dicatat ke log makanan harian Anda! 🐟';
-        }
-        
-        return 'Pertanyaan yang bagus sekali! Sebagai asisten gizi visual NutriVision, saya menyarankan Anda untuk terus mencatat asupan makanan harian Anda menggunakan fitur **Pindai AI** di dashboard Anda.\n\nApakah ada hidangan kuliner lokal atau saran nutrisi lain yang ingin Anda konsultasikan lebih lanjut? 🥗';
-    };
-
-    const handleSendMessage = (textToSend: string) => {
+    const handleSendMessage = async (textToSend: string) => {
         if (!textToSend.trim()) return;
 
         const userMessage: Message = {
@@ -71,17 +53,33 @@ export default function AiChatbot() {
         setInputValue('');
         setIsTyping(true);
 
-        // Jeda waktu respons alami untuk kenyamanan visual
-        setTimeout(() => {
+        try {
+            const response = await axios.post('/api/chat', {
+                message: textToSend
+            }, {
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 sender: 'ai',
-                text: getAiResponse(textToSend),
+                text: response.data.reply || 'Maaf, coba lagi sebentar.',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, aiMessage]);
+        } catch (error) {
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                sender: 'ai',
+                text: 'Maaf, coba lagi sebentar.',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
             setIsTyping(false);
-        }, 1200);
+        }
     };
 
     return (
@@ -100,7 +98,7 @@ export default function AiChatbot() {
 
             {/* 2. Chat Panel Drawer */}
             {isOpen && (
-                <div 
+                <div
                     className={cn(
                         "fixed inset-0 sm:absolute sm:inset-auto sm:-bottom-2 sm:-right-2 w-full h-full sm:w-[380px] sm:h-[540px] flex flex-col overflow-hidden bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-slate-100 dark:border-neutral-900 rounded-none sm:rounded-[2rem] shadow-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
                     )}
@@ -109,7 +107,7 @@ export default function AiChatbot() {
                     <div className="relative flex items-center justify-between bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4.5 text-white">
                         {/* Ambient circle glow */}
                         <div className="pointer-events-none absolute -top-8 -left-8 h-20 w-20 rounded-full bg-white/10 blur-xl"></div>
-                        
+
                         <div className="flex items-center gap-3">
                             <div className="relative flex h-9.5 w-9.5 items-center justify-center rounded-2xl bg-white text-amber-500 shadow-md">
                                 <Bot className="h-5.5 w-5.5" />
