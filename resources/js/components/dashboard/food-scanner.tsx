@@ -55,10 +55,10 @@ export default function FoodScanner({
                 <div className="pb-6">
                     <h3 className="text-lg font-black tracking-tight text-slate-800 dark:text-white uppercase italic flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500 animate-pulse" />
-                        <span>Pindai Makanan dengan AI</span>
+                        <span>Pindai Kematangan Pisang</span>
                     </h3>
                     <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 mt-1">
-                        Unggah foto makanan Anda. AI akan mengidentifikasi gizi, kalori, dan tipe makronutrisinya secara instan.
+                        Unggah foto buah pisang Anda. AI akan mengidentifikasi tingkat kematangan dan kandungan nutrisi lengkapnya secara instan.
                     </p>
                 </div>
                 
@@ -135,7 +135,7 @@ export default function FoodScanner({
                                             <Upload className="w-6 h-6 text-slate-500 dark:text-neutral-400" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-800 dark:text-white">Tarik & lepas foto makanan di sini, atau klik untuk memilih</p>
+                                            <p className="text-xs font-bold text-slate-800 dark:text-white">Tarik & lepas foto buah pisang di sini, atau klik untuk memilih</p>
                                             <p className="text-[10px] font-semibold text-slate-400 mt-1">Mendukung JPEG, PNG hingga 5 MB</p>
                                         </div>
                                         

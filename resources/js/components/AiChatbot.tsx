@@ -16,7 +16,7 @@ export default function AiChatbot() {
         {
             id: '1',
             sender: 'ai',
-            text: 'Halo! Saya **NutriBot**, asisten gizi cerdas Anda. 🥗 Ada yang bisa saya bantu hari ini?\n\nAnda bisa bertanya tentang cara kerja pemindai makanan visual AI, kalori kuliner Indonesia, atau tips hidup bugar!',
+            text: 'Halo! Saya **BananaBot**, asisten gizi khusus buah pisang Anda. 🍌 Ada yang bisa saya bantu hari ini?\n\nAnda bisa bertanya tentang cara kerja pemindai kematangan pisang AI, khasiat pati resisten pisang mentah, kandungan kalium pisang, atau resep makanan pisang sehat!',
             timestamp: new Date()
         }
     ]);
@@ -32,11 +32,11 @@ export default function AiChatbot() {
     }, [messages, isTyping]);
 
     const quickPrompts = [
-        'Bagaimana cara kerja NutriVision?',
-        'Berapa kalori Nasi Goreng? 🍳',
-        'Bagaimana cara kerja visual scan AI? 📸',
-        'Beri tips diet defisit kalori 🥑',
-        'Makanan lokal tinggi protein? 🍗'
+        'Bagaimana tingkat kematangan pisang mempengaruhi gula darah?',
+        'Apakah pisang mentah bagus untuk diet lambung? 🍌',
+        'Bagaimana cara kerja visual scan pisang? 📸',
+        'Beri tips diet sehat berbasis buah pisang 🥑',
+        'Mengapa kalium pisang penting bagi tubuh? ❤️'
     ];
 
     const handleSendMessage = async (textToSend: string) => {
@@ -115,8 +115,8 @@ export default function AiChatbot() {
                                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500"></span>
                             </div>
                             <div className="text-left">
-                                <h4 className="text-sm font-black tracking-wider uppercase italic leading-none">NutriBot AI</h4>
-                                <span className="text-[10px] font-bold opacity-80 leading-none mt-1.5 block">Asisten Gizi Anda</span>
+                                <h4 className="text-sm font-black tracking-wider uppercase italic leading-none">BananaBot AI</h4>
+                                <span className="text-[10px] font-bold opacity-80 leading-none mt-1.5 block">Asisten Gizi Pisang</span>
                             </div>
                         </div>
 
@@ -206,7 +206,7 @@ export default function AiChatbot() {
                             type="text"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Tanya gizi, resep, atau defisit kalori..."
+                            placeholder="Tanya gizi pisang, kalium, serat, atau resep..."
                             className="flex-1 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-950 px-4 py-3 text-xs font-semibold text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 shadow-inner focus:border-amber-500 focus:ring-amber-500 focus:outline-none transition"
                             disabled={isTyping}
                         />

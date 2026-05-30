@@ -11,6 +11,8 @@ class Nutrition extends Model
     protected $fillable = [
         'brand', 'item', 'key', 'serving_size',
         'calories', 'fat', 'carbs', 'protein',
+        'sugar', 'fiber', 'potassium', 'magnesium',
+        'vitamin_c', 'vitamin_b6', 'sodium', 'calcium', 'iron',
     ];
 
     public function results()

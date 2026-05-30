@@ -142,44 +142,46 @@ test('scan controller supports multi food detection and stores all items in data
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    // Create some nutrition items
-    $nuggets = Nutrition::create([
-        'brand' => 'mcd',
-        'item' => 'Chicken Nuggets',
-        'key' => 'mcd-nuggets',
-        'serving_size' => '6-pcs',
-        'calories' => 260,
-        'fat' => 15,
-        'carbs' => 14,
-        'protein' => 17,
+    // Create some banana nutrition items
+    $fullyRape = Nutrition::create([
+        'brand' => 'banana',
+        'item' => 'fully-rape',
+        'key' => 'banana-fully-rape',
+        'serving_size' => '1-buah(100g)',
+        'calories' => 89,
+        'fat' => 0.3,
+        'carbs' => 22.8,
+        'protein' => 1.1,
+        'sugar' => 12.2,
+        'fiber' => 2.6,
     ]);
 
-    $fries = Nutrition::create([
-        'brand' => 'mcd',
-        'item' => 'French Fries',
-        'key' => 'mcd-frenchfries',
-        'serving_size' => '100g',
-        'calories' => 373,
-        'fat' => 17.6,
-        'carbs' => 48.7,
-        'protein' => 4.1,
+    $semiRape = Nutrition::create([
+        'brand' => 'banana',
+        'item' => 'semi-rape',
+        'key' => 'banana-semi-rape',
+        'serving_size' => '1-buah(100g)',
+        'calories' => 92,
+        'fat' => 0.3,
+        'carbs' => 23.5,
+        'protein' => 1.1,
+        'sugar' => 8.5,
+        'fiber' => 3.5,
     ]);
 
     // Mock the HTTP request to the AI model
+    $predictUrl = rtrim(env('AI_API_URL', 'http://localhost:7860'), '/') . '/predict';
     Http::fake([
-        'https://galihkjaya-nutrivision-api.hf.space/predict' => Http::response([
-            'brand' => 'mcd',
-            'brand_score' => 0.99,
+        $predictUrl => Http::response([
             'items' => [
-                ['label' => 'mcd-nuggets', 'score' => 0.85],
-                ['label' => 'mcd-frenchfries', 'score' => 0.80],
-                ['label' => 'mcd-cola', 'score' => 0.40],
+                ['label' => 'banana-fully-rape', 'score' => 0.95],
+                ['label' => 'banana-semi-rape', 'score' => 0.80],
             ]
         ], 200),
     ]);
 
     // Send request with dummy image
-    $file = \Illuminate\Http\UploadedFile::fake()->image('mcd_meal.jpg');
+    $file = \Illuminate\Http\UploadedFile::fake()->image('banana_meal.jpg');
     $response = $this->postJson('/api/scan', [
         'image' => $file,
         'meal_type' => 'lunch',
@@ -188,16 +190,16 @@ test('scan controller supports multi food detection and stores all items in data
 
     $response->assertStatus(201)
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.nutrition.item', 'Chicken Nuggets, French Fries'); // Verifies name joining!
+        ->assertJsonPath('data.nutrition.item', 'Pisang Matang, Pisang Sedang'); // Verifies name joining in Indonesian!
 
     // Verify 2 results were created in the database
     $this->assertDatabaseCount('result', 2);
     $this->assertDatabaseHas('result', [
-        'nutrition_id' => $nuggets->id,
+        'nutrition_id' => $fullyRape->id,
         'meal_type' => 'lunch',
     ]);
     $this->assertDatabaseHas('result', [
-        'nutrition_id' => $fries->id,
+        'nutrition_id' => $semiRape->id,
         'meal_type' => 'lunch',
     ]);
 });

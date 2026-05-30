@@ -14,6 +14,15 @@ interface ScanItem {
         protein: number;
         carbs: number;
         fat: number;
+        sugar?: number;
+        fiber?: number;
+        potassium?: number;
+        magnesium?: number;
+        vitamin_c?: number;
+        vitamin_b6?: number;
+        sodium?: number;
+        calcium?: number;
+        iron?: number;
     };
 }
 
@@ -48,9 +57,9 @@ export default function RecentScans({ scans, consumed, totalScans, onDelete }: R
                 <div className="pb-6">
                     <h3 className="text-lg font-black tracking-tight text-slate-800 dark:text-white uppercase italic flex items-center gap-2">
                         <Utensils className="w-5 h-5 text-amber-500" />
-                        <span>Makanan Hari Ini</span>
+                        <span>Riwayat Scan Hari Ini</span>
                     </h3>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 mt-1">Makanan yang telah dipindai dan dikonsumsi pada hari ini.</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 mt-1">Pisang yang telah dipindai dan dikonsumsi pada hari ini.</p>
                 </div>
                 
                 <div className="overflow-y-auto max-h-[300px] space-y-4 px-2">
@@ -59,8 +68,8 @@ export default function RecentScans({ scans, consumed, totalScans, onDelete }: R
                             <div className="p-3.5 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-full">
                                 <Apple className="w-6 h-6 text-slate-400" />
                             </div>
-                            <p className="text-xs font-bold text-slate-800 dark:text-white">Belum ada makanan hari ini</p>
-                            <p className="text-[10px] font-semibold text-slate-400 max-w-[280px]">Gunakan panel sebelah kiri untuk memindai asupan pertama Anda!</p>
+                            <p className="text-xs font-bold text-slate-800 dark:text-white">Belum ada pemindaian pisang hari ini</p>
+                            <p className="text-[10px] font-semibold text-slate-400 max-w-[280px]">Gunakan panel sebelah kiri untuk memindai tingkat kematangan pisang Anda!</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-slate-100 dark:divide-neutral-800">
@@ -101,19 +110,53 @@ export default function RecentScans({ scans, consumed, totalScans, onDelete }: R
                                                     </span>
                                                 </div>
                                                 {scan.nutrition && (
-                                                    <div className="flex items-center gap-1.5 text-[9px] font-bold mt-1.5 flex-wrap">
-                                                        <span className="bg-red-50 dark:bg-red-950/30 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-md">
-                                                            {Math.round(scan.nutrition.calories * scan.serving_qty)} kkal
-                                                        </span>
-                                                        <span className="bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-md">
-                                                            P: {Math.round(scan.nutrition.protein * scan.serving_qty)}g
-                                                        </span>
-                                                        <span className="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-md">
-                                                            K: {Math.round(scan.nutrition.carbs * scan.serving_qty)}g
-                                                        </span>
-                                                        <span className="bg-emerald-50 dark:bg-emerald-600 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">
-                                                            L: {Math.round(scan.nutrition.fat * scan.serving_qty)}g
-                                                        </span>
+                                                    <div className="flex flex-col gap-1 mt-2">
+                                                        <div className="flex items-center gap-1 text-[9px] font-bold flex-wrap">
+                                                            <span className="bg-red-50 dark:bg-red-950/30 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-md">
+                                                                {Math.round(scan.nutrition.calories * scan.serving_qty)} kkal
+                                                            </span>
+                                                            <span className="bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-md">
+                                                                P: {(scan.nutrition.protein * scan.serving_qty).toFixed(1)}g
+                                                            </span>
+                                                            <span className="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-md">
+                                                                K: {(scan.nutrition.carbs * scan.serving_qty).toFixed(1)}g
+                                                            </span>
+                                                            <span className="bg-emerald-50 dark:bg-emerald-600 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">
+                                                                L: {(scan.nutrition.fat * scan.serving_qty).toFixed(1)}g
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-[8px] font-semibold text-slate-500 dark:text-neutral-400 flex-wrap">
+                                                            {scan.nutrition.sugar !== undefined && (
+                                                                <span className="bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 px-1.5 py-0.5 rounded-md">
+                                                                    Gula: {(scan.nutrition.sugar * scan.serving_qty).toFixed(1)}g
+                                                                </span>
+                                                            )}
+                                                            {scan.nutrition.fiber !== undefined && (
+                                                                <span className="bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 px-1.5 py-0.5 rounded-md">
+                                                                    Serat: {(scan.nutrition.fiber * scan.serving_qty).toFixed(1)}g
+                                                                </span>
+                                                            )}
+                                                            {scan.nutrition.potassium !== undefined && (
+                                                                <span className="bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 px-1.5 py-0.5 rounded-md">
+                                                                    Kalium: {Math.round(scan.nutrition.potassium * scan.serving_qty)}mg
+                                                                </span>
+                                                            )}
+                                                            {scan.nutrition.magnesium !== undefined && (
+                                                                <span className="bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 px-1.5 py-0.5 rounded-md">
+                                                                    Magnesium: {Math.round(scan.nutrition.magnesium * scan.serving_qty)}mg
+                                                                </span>
+                                                            )}
+                                                            {scan.nutrition.vitamin_c !== undefined && (
+                                                                <span className="bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 px-1.5 py-0.5 rounded-md">
+                                                                    Vit C: {(scan.nutrition.vitamin_c * scan.serving_qty).toFixed(1)}mg
+                                                                </span>
+                                                            )}
+                                                            {scan.nutrition.vitamin_b6 !== undefined && (
+                                                                <span className="bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 px-1.5 py-0.5 rounded-md">
+                                                                    Vit B6: {(scan.nutrition.vitamin_b6 * scan.serving_qty).toFixed(2)}mg
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -129,7 +172,7 @@ export default function RecentScans({ scans, consumed, totalScans, onDelete }: R
                                                 type="button" 
                                                 onClick={() => onDelete(scan.id)}
                                                 className="w-8 h-8 rounded-xl text-slate-450 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors flex items-center justify-center cursor-pointer"
-                                                title="Hapus Makanan"
+                                                title="Hapus Pemindaian"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>

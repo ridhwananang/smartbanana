@@ -41,7 +41,15 @@ class ScanController extends Controller
         $servingQty = $request->serving_qty ?? 1;
 
         foreach ($detectedItems as $item) {
-            $nutrition = Nutrition::where('key', $item['key'])->first();
+            // Toleran terhadap typo "rape" vs "ripe"
+            $key = $item['key'];
+            $altKey1 = str_replace('ripe', 'rape', $key);
+            $altKey2 = str_replace('rape', 'ripe', $key);
+
+            $nutrition = Nutrition::where('key', $key)
+                ->orWhere('key', $altKey1)
+                ->orWhere('key', $altKey2)
+                ->first();
 
             // Hanya simpan jika kunci makanan ditemukan di database gizi kita
             if ($nutrition) {
@@ -64,18 +72,28 @@ class ScanController extends Controller
             }
         }
 
-        // Jika ada makanan terdeteksi tetapi tidak ada satupun yang terdaftar di database gizi kita
+        // Jika ada pisang terdeteksi tetapi tidak ada satupun yang terdaftar di database gizi kita
         if (empty($createdResults)) {
             $firstLabel = $detectedItems[0]['key'] ?? 'unknown';
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Makanan terdeteksi ('.$firstLabel.') namun tidak ditemukan di database gizi.',
+                'message' => 'Pisang terdeteksi ('.$firstLabel.') namun tidak ditemukan di database gizi.',
             ], 404);
         }
 
         // Buat nama gabungan makanan untuk pesan sukses (misal: "Nuggets, French Fries, Cola")
         $itemNames = collect($savedNutritionItems)->map(function ($nut) {
+            $item = strtolower($nut->item);
+            if (str_contains($item, 'fully-rape') || str_contains($item, 'fully-ripe')) {
+                return 'Pisang Matang';
+            }
+            if (str_contains($item, 'semi-rape') || str_contains($item, 'semi-ripe')) {
+                return 'Pisang Sedang';
+            }
+            if (str_contains($item, 'unripe')) {
+                return 'Pisang Mentah';
+            }
             return $nut->item;
         })->implode(', ');
 
@@ -166,20 +184,19 @@ class ScanController extends Controller
 
     private function beautifyLabel(string $rawLabel): string
     {
-        $parts = explode('-', $rawLabel);
-        $brand = $parts[0] ?? '';
-        $item = $parts[1] ?? '';
+        $cleanLabel = strtolower(trim($rawLabel));
 
-        $brandMap = [
-            'mcd' => "McDonald's",
-            'kfc' => 'KFC',
-            'bk' => 'Burger King',
-        ];
+        if (str_contains($cleanLabel, 'fully-rape') || str_contains($cleanLabel, 'fully-ripe')) {
+            return 'Terdeteksi: Pisang Matang (Fully Ripe)';
+        }
+        if (str_contains($cleanLabel, 'semi-rape') || str_contains($cleanLabel, 'semi-ripe')) {
+            return 'Terdeteksi: Pisang Sedang (Semi Ripe)';
+        }
+        if (str_contains($cleanLabel, 'unripe')) {
+            return 'Terdeteksi: Pisang Mentah (Unripe)';
+        }
 
-        $cleanBrand = $brandMap[strtolower($brand)] ?? strtoupper($brand);
-        $cleanItem = ucwords(str_replace('-', ' ', $item));
-
-        return "Terdeteksi: {$cleanBrand} - {$cleanItem}";
+        return 'Terdeteksi: ' . ucwords(str_replace(['-', '_'], ' ', $rawLabel));
     }
 
     private function analisisAI($image): array
@@ -187,11 +204,14 @@ class ScanController extends Controller
         $filePath = $image->getPathname();
         $fileName = $image->getClientOriginalName();
 
-        // Panggil API cloud Hugging Face secara langsung
+        // Ambil URL Colab API dari variabel lingkungan (.env)
+        $aiApiUrl = rtrim(env('AI_API_URL', 'http://localhost:7860'), '/');
+        $predictUrl = $aiApiUrl . '/predict';
+
         try {
             $response = Http::timeout(90)
                 ->attach('file', file_get_contents($filePath), $fileName)
-                ->post('https://galihkjaya-nutrivision-api.hf.space/predict');
+                ->post($predictUrl);
 
             if ($response->successful()) {
                 return $this->parseResponse($response->json());
@@ -199,21 +219,21 @@ class ScanController extends Controller
 
             if ($response->status() === 503 || $response->status() === 504) {
                 return [
-                    ['error' => 'Server AI sedang dinyalakan ulang (Cold Start). Silakan tunggu 1-2 menit lalu coba unggah kembali.'],
+                    ['error' => 'Server AI Colab sedang bersiap (Cold Start). Silakan tunggu 1-2 menit lalu coba unggah kembali.'],
                 ];
             }
 
             return [
-                ['error' => 'Gagal menghubungi server AI cloud (Status: '.$response->status().')'],
+                ['error' => 'Gagal menghubungi server AI Colab (Status: '.$response->status().')'],
             ];
 
         } catch (ConnectionException $e) {
             return [
-                ['error' => 'Server AI sedang bersiap (Cold Start). Silakan tunggu 1-2 menit lalu coba unggah kembali.'],
+                ['error' => 'Koneksi gagal. Pastikan server API di Google Colab telah berjalan dan URL di file .env sudah sesuai.'],
             ];
         } catch (\Exception $e) {
             return [
-                ['error' => 'Error koneksi AI: '.$e->getMessage().'. Pastikan Space hf.co aktif.'],
+                ['error' => 'Error koneksi AI: '.$e->getMessage().'. Pastikan URL Colab aktif.'],
             ];
         }
     }
@@ -223,9 +243,19 @@ class ScanController extends Controller
         $items = $result['items'] ?? [];
 
         if (empty($items)) {
-            return [
-                ['error' => 'Makanan tidak dikenali dalam foto'],
-            ];
+            // Jika API mengembalikan klasifikasi langsung (format non-array items)
+            if (isset($result['class'])) {
+                $items = [
+                    [
+                        'label' => $result['class'],
+                        'score' => $result['confidence'] ?? 1.0
+                    ]
+                ];
+            } else {
+                return [
+                    ['error' => 'Kematangan pisang tidak dapat dikenali dalam foto'],
+                ];
+            }
         }
 
         // Urutkan item berdasarkan skor kecocokan (score) tertinggi ke terendah

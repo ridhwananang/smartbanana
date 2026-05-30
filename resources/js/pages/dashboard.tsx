@@ -190,14 +190,14 @@ export default function Dashboard() {
     const handleScanSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!scanForm.data.image) {
-            toast.error("Silakan unggah foto makanan terlebih dahulu.");
+            toast.error("Silakan unggah foto buah pisang terlebih dahulu.");
             return;
         }
 
         try {
             const res = await scanForm.submit(Api.ScanController.store()) as { status: string; data: any };
             if (res.status === 'success') {
-                toast.success(`Berhasil mendeteksi ${res.data.nutrition.item}! Gizi ditambahkan.`);
+                toast.success(`Berhasil mendeteksi ${res.data.nutrition.item}! Data gizi ditambahkan.`);
                 // Reset form preview and data
                 setImagePreview(null);
                 scanForm.setData({
@@ -211,7 +211,7 @@ export default function Dashboard() {
             }
         } catch (err: any) {
             console.error(err);
-            toast.error(scanForm.errors.image || "Gagal memindai gambar makanan. Coba lagi.");
+            toast.error(scanForm.errors.image || "Gagal memindai kematangan pisang. Coba lagi.");
         }
     };
 
@@ -257,7 +257,7 @@ export default function Dashboard() {
                     {/* Scanning laser line effect */}
                     <div className="absolute inset-x-0 h-0.5 bg-amber-500 shadow-md shadow-amber-500/80 animate-pulse top-1/2"></div>
                 </div>
-                <span className="text-xs text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-widest animate-pulse">Menyelaraskan data gizi Nutrivision...</span>
+                <span className="text-xs text-slate-500 dark:text-neutral-400 font-bold uppercase tracking-widest animate-pulse">Menyelaraskan data kematangan pisang...</span>
             </div>
         );
     }
