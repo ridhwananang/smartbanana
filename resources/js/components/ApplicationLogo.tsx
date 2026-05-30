@@ -7,14 +7,18 @@ interface ApplicationLogoProps {
 
 export default function ApplicationLogo({
     className = '',
-    iconClassName = 'w-6 h-6',
+    iconClassName = 'w-10 h-10',
 }: ApplicationLogoProps) {
     return (
         <div className={`flex items-center gap-3 select-none ${className}`}>
-            <div className="rounded-2xl bg-amber-500 p-2 shadow-lg shadow-amber-500/30 transition-transform duration-300">
-                <ScanEye className={`text-white ${iconClassName}`} />
+            <div className="p-2 transition-transform duration-300">
+                <img
+                    src="/images/fav-logo.png"
+                    alt="App Logo"
+                    className={`size-15 ${iconClassName}`}
+                />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-slate-800 uppercase italic">
+            <span className="text-2xl font-bold tracking-tighter uppercase italic">
                 NUTRI<span className="text-amber-500">VISION</span>
             </span>
         </div>

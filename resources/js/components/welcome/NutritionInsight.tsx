@@ -4,7 +4,7 @@ export default function NutritionInsight() {
     return (
         <section
             id="insight"
-            className="border-t border-slate-50 bg-[#FCFCFC] py-24 dark:border-neutral-900 dark:bg-neutral-950 overflow-hidden"
+            className="overflow-hidden border-t border-slate-50 bg-[#FCFCFC] py-24 dark:border-neutral-900 dark:bg-neutral-950"
         >
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 <div className="grid items-center gap-16 lg:grid-cols-2">
@@ -17,10 +17,10 @@ export default function NutritionInsight() {
                             Sekadar Angka.
                         </h2>
                         <p className="mb-8 text-sm leading-relaxed font-semibold text-slate-500 sm:text-base dark:text-neutral-400">
-                            Setiap hasil scan memberikan rincian
-                            mikronutrisi dan makronutrisi yang lengkap. Kami
-                            membantu Anda memecah apa yang sebenarnya ada di
-                            piring Anda demi masa depan yang lebih bugar.
+                            Setiap hasil scan memberikan rincian mikronutrisi
+                            dan makronutrisi yang lengkap. Kami membantu Anda
+                            memecah apa yang sebenarnya ada di piring Anda demi
+                            masa depan yang lebih bugar.
                         </p>
 
                         <div className="space-y-6">
@@ -33,8 +33,9 @@ export default function NutritionInsight() {
                                         Analisis Komposisi
                                     </h4>
                                     <p className="text-xs font-medium text-slate-500 dark:text-neutral-400">
-                                        Memisahkan bahan utama seperti
-                                        protein, lemak, dan karbohidrat secara otomatis mendalam.
+                                        Memisahkan bahan utama seperti protein,
+                                        lemak, dan karbohidrat secara otomatis
+                                        mendalam.
                                     </p>
                                 </div>
                             </div>
@@ -47,7 +48,9 @@ export default function NutritionInsight() {
                                         Indeks Glikemik
                                     </h4>
                                     <p className="text-xs font-medium text-slate-500 dark:text-neutral-400">
-                                        Memberikan estimasi dampak makanan terhadap kadar gula darah Anda secara real-time.
+                                        Memberikan estimasi dampak makanan
+                                        terhadap kadar gula darah Anda secara
+                                        real-time.
                                     </p>
                                 </div>
                             </div>
@@ -60,7 +63,9 @@ export default function NutritionInsight() {
                                         Rekomendasi Porsi
                                     </h4>
                                     <p className="text-xs font-medium text-slate-500 dark:text-neutral-400">
-                                        Saran cerdas untuk menyeimbangkan makanan berat dengan aktivitas fisik sehat pilihan.
+                                        Saran cerdas untuk menyeimbangkan
+                                        makanan berat dengan aktivitas fisik
+                                        sehat pilihan.
                                     </p>
                                 </div>
                             </div>
@@ -130,7 +135,9 @@ export default function NutritionInsight() {
                             </div>
                             <div className="mt-8 border-t border-slate-100 pt-6 dark:border-neutral-800">
                                 <div className="dark:bg-neutral-955 text-slate-550 rounded-2xl bg-slate-50 p-4 text-[10px] leading-relaxed font-semibold italic dark:text-neutral-400">
-                                    "AI menyarankan untuk menambahkan segelas air lemon untuk membantu penyerapan zat besi dari sayuran hijau ini harian Anda."
+                                    "AI menyarankan untuk menambahkan segelas
+                                    air lemon untuk membantu penyerapan zat besi
+                                    dari sayuran hijau ini harian Anda."
                                 </div>
                             </div>
                         </div>
