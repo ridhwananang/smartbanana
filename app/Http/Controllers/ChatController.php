@@ -11,7 +11,7 @@ use Carbon\Carbon;
 
 class ChatController extends Controller
 {
-    public function chat(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'message' => 'required|string|max:500',

@@ -49,12 +49,12 @@ export default function FoodScanner({
     return (
         <div className="shadow-xl border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] bg-white dark:bg-neutral-950 overflow-hidden relative p-6 sm:p-8 flex flex-col justify-between">
             {/* Visual glowing frame background */}
-            <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-100 dark:bg-amber-950/20 opacity-40 blur-3xl"></div>
+            <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-yellow-100/30 dark:bg-yellow-950/10 opacity-40 blur-3xl"></div>
             
             <div>
                 <div className="pb-6">
                     <h3 className="text-lg font-black tracking-tight text-slate-800 dark:text-white uppercase italic flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-amber-500 fill-amber-500 animate-pulse" />
+                        <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-pulse" />
                         <span>Pindai Kematangan Pisang</span>
                     </h3>
                     <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 mt-1">
@@ -66,7 +66,7 @@ export default function FoodScanner({
                     <div className="space-y-4">
                         {/* Upload Dropzone / Camera Streaming Area */}
                         {isCameraActive ? (
-                            <div className="relative w-full rounded-2xl overflow-hidden bg-black flex flex-col items-center justify-center min-h-[260px] border-2 border-amber-500">
+                            <div className="relative w-full rounded-2xl overflow-hidden bg-black flex flex-col items-center justify-center min-h-[260px] border-2 border-yellow-500">
                                 <video 
                                     ref={videoRef} 
                                     autoPlay 
@@ -80,7 +80,7 @@ export default function FoodScanner({
                                             e.stopPropagation();
                                             capturePhoto();
                                         }}
-                                        className="bg-amber-500 hover:bg-amber-600 text-white font-black text-xs tracking-wider uppercase rounded-2xl px-5 py-2.5 shadow-lg shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer active:scale-95 transition"
+                                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-black text-xs tracking-wider uppercase rounded-2xl px-5 py-2.5 shadow-lg shadow-yellow-500/20 flex items-center gap-1.5 cursor-pointer active:scale-95 transition"
                                     >
                                         <Camera className="w-4 h-4 text-white" />
                                         <span>Ambil Foto</span>
@@ -104,8 +104,8 @@ export default function FoodScanner({
                                 onClick={() => fileInputRef.current?.click()}
                                 className={`border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden group ${
                                     imagePreview 
-                                        ? 'border-amber-400 bg-amber-50/5 dark:bg-neutral-900/50' 
-                                        : 'border-slate-200 hover:border-amber-400 dark:border-neutral-800 hover:bg-amber-50/5 dark:hover:bg-neutral-900/10'
+                                        ? 'border-yellow-400 bg-yellow-50/5 dark:bg-neutral-900/50' 
+                                        : 'border-slate-200 hover:border-yellow-400 dark:border-neutral-800 hover:bg-yellow-50/5 dark:hover:bg-neutral-900/10'
                                 }`}
                             >
                                 {imagePreview ? (
@@ -119,7 +119,7 @@ export default function FoodScanner({
                                         {scanForm.processing && (
                                             <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center rounded-2xl z-20">
                                                 <div 
-                                                    className="absolute left-0 right-0 h-1.5 bg-amber-500 shadow-[0_0_12px_#f59e0b] w-full"
+                                                    className="absolute left-0 right-0 h-1.5 bg-yellow-500 shadow-[0_0_12px_#eab308] w-full"
                                                     style={{
                                                         animation: 'scan-animation 2.2s ease-in-out infinite',
                                                     }}
@@ -153,7 +153,7 @@ export default function FoodScanner({
                                             }}
                                             className="text-[10px] font-black tracking-wider uppercase flex items-center gap-1.5 bg-slate-900 text-white rounded-xl px-4 py-2 hover:bg-slate-800 active:scale-95 transition cursor-pointer"
                                         >
-                                            <Camera className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                                            <Camera className="w-3.5 h-3.5 text-yellow-400 animate-pulse" />
                                             <span>Gunakan Kamera</span>
                                         </button>
                                     </div>
@@ -169,37 +169,22 @@ export default function FoodScanner({
                         )}
          
                         {/* Form Fields */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5 text-left">
-                                <InputLabel htmlFor="meal_type" value="Waktu Makan" />
-                                <Select 
-                                    value={scanForm.data.meal_type} 
-                                    onValueChange={(val: any) => scanForm.setData('meal_type', val)}
-                                >
-                                    <SelectTrigger className="capitalize text-xs cursor-pointer rounded-2xl py-3 px-4 border-slate-200 bg-white shadow-xs focus:ring-amber-500 focus:border-amber-500">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="breakfast" className="cursor-pointer">Sarapan</SelectItem>
-                                        <SelectItem value="lunch" className="cursor-pointer">Makan Siang</SelectItem>
-                                        <SelectItem value="dinner" className="cursor-pointer">Makan Malam</SelectItem>
-                                        <SelectItem value="snack" className="cursor-pointer">Cemilan</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            
-                            <div className="space-y-1.5 text-left">
-                                <InputLabel htmlFor="serving_qty" value="Jumlah Porsi" />
-                                <Input 
-                                    id="serving_qty"
-                                    type="number"
-                                    min="0.1"
-                                    step="0.1"
-                                    value={scanForm.data.serving_qty}
-                                    onChange={(e) => scanForm.setData('serving_qty', parseFloat(e.target.value) || 1)}
-                                    className="text-xs font-bold rounded-2xl py-3 px-4 border-slate-200 bg-white shadow-xs focus:ring-amber-500 focus:border-amber-500"
-                                />
-                            </div>
+                        <div className="space-y-1.5 text-left w-full">
+                            <InputLabel htmlFor="meal_type" value="Waktu Makan" />
+                            <Select 
+                                value={scanForm.data.meal_type} 
+                                onValueChange={(val: any) => scanForm.setData('meal_type', val)}
+                            >
+                                <SelectTrigger className="capitalize text-xs cursor-pointer rounded-2xl py-3 px-4 border-slate-200 bg-white shadow-xs focus:ring-yellow-500 focus:border-yellow-500 w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="breakfast" className="cursor-pointer">Sarapan</SelectItem>
+                                    <SelectItem value="lunch" className="cursor-pointer">Makan Siang</SelectItem>
+                                    <SelectItem value="dinner" className="cursor-pointer">Makan Malam</SelectItem>
+                                    <SelectItem value="snack" className="cursor-pointer">Cemilan</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
@@ -221,7 +206,7 @@ export default function FoodScanner({
                         <button 
                             type="submit" 
                             disabled={scanForm.processing || !scanForm.data.image}
-                            className="ml-auto text-[10px] font-black tracking-wider uppercase shadow-lg shadow-amber-500/20 bg-amber-500 text-white rounded-2xl px-6 py-3.5 hover:bg-amber-600 active:scale-95 disabled:opacity-50 disabled:scale-100 flex items-center gap-2 cursor-pointer transition"
+                            className="ml-auto text-[10px] font-black tracking-wider uppercase shadow-lg shadow-yellow-500/20 bg-yellow-500 text-white rounded-2xl px-6 py-3.5 hover:bg-yellow-600 active:scale-95 disabled:opacity-50 disabled:scale-100 flex items-center gap-2 cursor-pointer transition"
                         >
                             {scanForm.processing ? (
                                 <>

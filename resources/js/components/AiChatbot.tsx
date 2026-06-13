@@ -88,7 +88,7 @@ export default function AiChatbot() {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-tr from-amber-500 to-amber-600 px-5 py-4 text-xs font-black tracking-widest text-white uppercase shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-1 active:scale-95 duration-200 transition-all focus:outline-none select-none"
+                    className="flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-tr from-yellow-500 to-amber-500 px-5 py-4 text-xs font-black tracking-widest text-white uppercase shadow-lg shadow-yellow-500/30 hover:shadow-xl hover:shadow-yellow-500/40 hover:-translate-y-1 active:scale-95 duration-200 transition-all focus:outline-none select-none"
                     title="Konsultasi Gizi AI"
                 >
                     <Sparkles className="h-4.5 w-4.5 animate-pulse text-white fill-white/20" />
@@ -104,12 +104,12 @@ export default function AiChatbot() {
                     )}
                 >
                     {/* Header */}
-                    <div className="relative flex items-center justify-between bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4.5 text-white">
+                    <div className="relative flex items-center justify-between bg-gradient-to-r from-yellow-500 to-amber-500 px-6 py-4.5 text-white">
                         {/* Ambient circle glow */}
                         <div className="pointer-events-none absolute -top-8 -left-8 h-20 w-20 rounded-full bg-white/10 blur-xl"></div>
 
                         <div className="flex items-center gap-3">
-                            <div className="relative flex h-9.5 w-9.5 items-center justify-center rounded-2xl bg-white text-amber-500 shadow-md">
+                            <div className="relative flex h-9.5 w-9.5 items-center justify-center rounded-2xl bg-white text-yellow-500 shadow-md">
                                 <Bot className="h-5.5 w-5.5" />
                                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 animate-ping"></span>
                                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500"></span>
@@ -140,7 +140,7 @@ export default function AiChatbot() {
                                 )}
                             >
                                 {msg.sender === 'ai' && (
-                                    <div className="flex h-7.5 w-7.5 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                                    <div className="flex h-7.5 w-7.5 flex-shrink-0 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-950/40 text-yellow-600 dark:text-yellow-400">
                                         <Bot className="h-4.5 w-4.5" />
                                     </div>
                                 )}
@@ -148,7 +148,7 @@ export default function AiChatbot() {
                                     className={cn(
                                         "max-w-[78%] rounded-2xl p-3.5 text-xs shadow-xs leading-relaxed font-semibold",
                                         msg.sender === 'user'
-                                            ? 'bg-amber-500 text-white rounded-tr-xs shadow-md shadow-amber-500/10 text-left'
+                                            ? 'bg-yellow-500 text-white rounded-tr-xs shadow-md shadow-yellow-500/10 text-left'
                                             : 'bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 text-slate-800 dark:text-neutral-200 rounded-tl-xs text-left whitespace-pre-line'
                                     )}
                                     dangerouslySetInnerHTML={{
@@ -163,7 +163,7 @@ export default function AiChatbot() {
                         {/* Typing Bouncing indicator */}
                         {isTyping && (
                             <div className="flex w-full gap-2 justify-start items-center">
-                                <div className="flex h-7.5 w-7.5 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                                <div className="flex h-7.5 w-7.5 flex-shrink-0 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-950/40 text-yellow-600 dark:text-yellow-400">
                                     <Bot className="h-4.5 w-4.5 animate-bounce" />
                                 </div>
                                 <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-850 rounded-2xl rounded-tl-xs px-4 py-3 flex gap-1.5 items-center">
@@ -185,7 +185,7 @@ export default function AiChatbot() {
                                     <button
                                         key={idx}
                                         onClick={() => handleSendMessage(prompt.replace(/ [📸🍳🥑🍗]/g, ''))}
-                                        className="flex-shrink-0 cursor-pointer rounded-xl border border-slate-100 dark:border-neutral-850 bg-slate-50 dark:bg-neutral-900 px-3 py-1.5 text-[10px] font-bold text-slate-650 dark:text-neutral-300 hover:border-amber-400 hover:bg-amber-50/5 hover:text-amber-600 transition"
+                                        className="flex-shrink-0 cursor-pointer rounded-xl border border-slate-100 dark:border-neutral-850 bg-slate-50 dark:bg-neutral-900 px-3 py-1.5 text-[10px] font-bold text-slate-650 dark:text-neutral-300 hover:border-yellow-400 hover:bg-yellow-50/5 hover:text-yellow-600 transition"
                                     >
                                         {prompt}
                                     </button>
@@ -207,13 +207,13 @@ export default function AiChatbot() {
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Tanya gizi pisang, kalium, serat, atau resep..."
-                            className="flex-1 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-950 px-4 py-3 text-xs font-semibold text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 shadow-inner focus:border-amber-500 focus:ring-amber-500 focus:outline-none transition"
+                            className="flex-1 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-950 px-4 py-3 text-xs font-semibold text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 shadow-inner focus:border-yellow-500 focus:ring-yellow-500 focus:outline-none transition"
                             disabled={isTyping}
                         />
                         <button
                             type="submit"
                             disabled={isTyping || !inputValue.trim()}
-                            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md shadow-amber-500/25 hover:bg-amber-600 active:scale-95 disabled:opacity-40 disabled:scale-100 transition duration-150"
+                            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-yellow-500 text-white shadow-md shadow-yellow-500/25 hover:bg-yellow-600 active:scale-95 disabled:opacity-40 disabled:scale-100 transition duration-150"
                             title="Kirim Pesan"
                         >
                             <Send className="h-4.5 w-4.5 text-white fill-white/10" />

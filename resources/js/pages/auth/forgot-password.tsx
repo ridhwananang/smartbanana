@@ -38,7 +38,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                         <div className="pt-2">
                             <PrimaryButton
-                                className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase animate-pulse"
+                                className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase"
                                 disabled={processing}
                             >
                                 {processing ? 'Mengirim Tautan...' : 'Kirim Tautan Reset Sandi'}

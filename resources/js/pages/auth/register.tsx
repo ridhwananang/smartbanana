@@ -21,7 +21,7 @@ export default function Register() {
             <div className="flex min-h-[90vh] flex-col items-center justify-center bg-[#FCFCFC] dark:bg-neutral-950 px-4 py-12 sm:px-6 lg:px-8">
                 <div className="relative w-full max-w-md space-y-6 sm:space-y-8 overflow-hidden rounded-3xl sm:rounded-[2.5rem] border border-slate-100 dark:border-neutral-900 bg-white dark:bg-neutral-900 p-5 sm:p-10 shadow-xl dark:shadow-neutral-950/40 transition-all">
                     {/* Visual decoration */}
-                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-100 dark:bg-amber-950/20 opacity-50 blur-2xl"></div>
+                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-yellow-100 dark:bg-yellow-950/20 opacity-50 blur-2xl"></div>
 
                     {/* Logo & Header */}
                     <div className="space-y-2 text-center">
@@ -29,15 +29,15 @@ export default function Register() {
                             href="/"
                             className="group inline-flex cursor-pointer justify-center transition hover:scale-105"
                         >
-                            <div className="rounded-2xl bg-amber-500 p-2.5 shadow-lg shadow-amber-500/30">
+                            <div className="rounded-2xl bg-yellow-500 p-2.5 shadow-lg shadow-yellow-500/30">
                                 <ScanEye className="h-6 w-6 text-white" />
                             </div>
                         </Link>
                         <h2 className="pt-3 text-2xl font-black tracking-tight text-slate-800 dark:text-white uppercase italic">
-                            Daftar <span className="text-amber-500">Nutrivision</span>
+                            Daftar <span className="text-yellow-500">SmartBanana</span>
                         </h2>
                         <p className="text-xs font-semibold text-slate-500 dark:text-neutral-450">
-                            Mulai perjalanan hidup bugar Anda bersama kami
+                            Mulai perjalanan analisis kematangan pisang Anda bersama kami
                         </p>
                     </div>
 
@@ -55,7 +55,8 @@ export default function Register() {
                                         id="name"
                                         type="text"
                                         name="name"
-                                        className="block w-full focus:border-amber-500 focus:ring-amber-500"
+                                        placeholder="Nama Lengkap Anda"
+                                        className="block w-full focus:border-yellow-500 focus:ring-yellow-500"
                                         autoComplete="name"
                                         isFocused={true}
                                         required
@@ -70,7 +71,8 @@ export default function Register() {
                                         id="email"
                                         type="email"
                                         name="email"
-                                        className="block w-full focus:border-amber-500 focus:ring-amber-500"
+                                        placeholder="nama@email.com"
+                                        className="block w-full focus:border-yellow-500 focus:ring-yellow-500"
                                         autoComplete="email"
                                         required
                                     />
@@ -87,7 +89,8 @@ export default function Register() {
                                         id="password"
                                         type="password"
                                         name="password"
-                                        className="block w-full focus:border-amber-500 focus:ring-amber-500"
+                                        placeholder="Min. 8 karakter"
+                                        className="block w-full focus:border-yellow-500 focus:ring-yellow-500"
                                         autoComplete="new-password"
                                         required
                                     />
@@ -104,7 +107,8 @@ export default function Register() {
                                         id="password_confirmation"
                                         type="password"
                                         name="password_confirmation"
-                                        className="block w-full focus:border-amber-500 focus:ring-amber-500"
+                                        placeholder="Ulangi kata sandi di atas"
+                                        className="block w-full focus:border-yellow-500 focus:ring-yellow-500"
                                         autoComplete="new-password"
                                         required
                                     />
@@ -116,7 +120,7 @@ export default function Register() {
                                 {/* Action buttons */}
                                 <div className="space-y-3 pt-2">
                                     <PrimaryButton
-                                        className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase animate-pulse"
+                                        className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase"
                                         disabled={processing}
                                     >
                                         {processing
@@ -174,7 +178,7 @@ export default function Register() {
                         </span>
                         <Link
                             href={login()}
-                            className="ml-1.5 font-bold text-amber-500 transition hover:text-amber-600"
+                            className="ml-1.5 font-bold text-yellow-500 transition hover:text-yellow-600"
                         >
                             Masuk Sekarang
                         </Link>

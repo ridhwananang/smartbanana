@@ -33,7 +33,7 @@ export default function Login({
             <div className="flex min-h-[80vh] flex-col items-center justify-center bg-[#FCFCFC] dark:bg-neutral-950 px-4 py-12 sm:px-6 lg:px-8">
                 <div className="relative w-full max-w-md space-y-6 sm:space-y-8 overflow-hidden rounded-3xl sm:rounded-[2.5rem] border border-slate-100 dark:border-neutral-900 bg-white dark:bg-neutral-900 p-5 sm:p-10 shadow-xl dark:shadow-neutral-950/40 transition-all">
                     {/* Visual glowing frame background */}
-                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-amber-100 dark:bg-amber-950/20 opacity-50 blur-2xl"></div>
+                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-yellow-100 dark:bg-yellow-950/20 opacity-50 blur-2xl"></div>
 
                     {/* Logo & Header */}
                     <div className="space-y-2 text-center">
@@ -41,15 +41,15 @@ export default function Login({
                             href="/"
                             className="group inline-flex cursor-pointer justify-center transition hover:scale-105"
                         >
-                            <div className="rounded-2xl bg-amber-500 p-2.5 shadow-lg shadow-amber-500/30">
+                            <div className="rounded-2xl bg-yellow-500 p-2.5 shadow-lg shadow-yellow-500/30">
                                 <ScanEye className="h-6 w-6 text-white" />
                             </div>
                         </Link>
                         <h2 className="pt-3 text-2xl font-black tracking-tight text-slate-800 dark:text-white uppercase italic">
-                            Masuk <span className="text-amber-500">Nutrivision</span>
+                            Masuk <span className="text-yellow-500">SmartBanana</span>
                         </h2>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-neutral-450">
-                            Pantau nutrisi harian Anda secara cerdas
+                        <p className="text-xs font-semibold text-slate-500 dark:text-neutral-455">
+                            Pantau tingkat kematangan pisang Anda secara cerdas
                         </p>
                     </div>
 
@@ -74,7 +74,8 @@ export default function Login({
                                         id="email"
                                         type="email"
                                         name="email"
-                                        className="block w-full focus:border-amber-500 focus:ring-amber-500"
+                                        placeholder="nama@email.com"
+                                        className="block w-full focus:border-yellow-500 focus:ring-yellow-500"
                                         autoComplete="email"
                                         isFocused={true}
                                         required
@@ -92,7 +93,7 @@ export default function Login({
                                         {canResetPassword && (
                                             <Link
                                                 href={request()}
-                                                className="cursor-pointer text-xs font-bold text-amber-500 decoration-2 transition duration-150 hover:text-amber-600 hover:underline"
+                                                className="cursor-pointer text-xs font-bold text-yellow-500 decoration-2 transition duration-150 hover:text-yellow-600 hover:underline"
                                             >
                                                 Lupa sandi?
                                             </Link>
@@ -102,7 +103,8 @@ export default function Login({
                                         id="password"
                                         type="password"
                                         name="password"
-                                        className="block w-full focus:border-amber-500 focus:ring-amber-500"
+                                        placeholder="Masukkan kata sandi Anda"
+                                        className="block w-full focus:border-yellow-500 focus:ring-yellow-500"
                                         autoComplete="current-password"
                                         required
                                     />
@@ -124,7 +126,7 @@ export default function Login({
                                 {/* Action buttons */}
                                 <div className="space-y-3">
                                     <PrimaryButton
-                                        className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase animate-pulse"
+                                        className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase"
                                         disabled={processing}
                                     >
                                         {processing
@@ -182,9 +184,9 @@ export default function Login({
                                 Belum punya akun?
                             </span>
                             <Link
-                                href={register()}
-                                className="ml-1.5 font-bold text-amber-500 transition hover:text-amber-600"
-                            >
+                                                                href={register()}
+                                                                className="ml-1.5 font-bold text-yellow-500 transition hover:text-yellow-600"
+                                                            >
                                 Daftar Sekarang
                             </Link>
                         </div>

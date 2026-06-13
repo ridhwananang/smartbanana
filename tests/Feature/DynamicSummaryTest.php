@@ -86,7 +86,7 @@ test('weekly and monthly stats return correct dynamic calculations', function ()
     ]);
 
     // Weekly stats call
-    $responseWeekly = $this->getJson('/api/stats/weekly');
+    $responseWeekly = $this->getJson('/api/stats?range=weekly');
     $responseWeekly->assertOk();
 
     // Verify yesterday's data exists and is correct in the weekly list
@@ -127,7 +127,7 @@ test('daily-summary history dynamic endpoint returns correct values', function (
         'consumed_at' => Carbon::yesterday()->toDateString(),
     ]);
 
-    $response = $this->getJson('/api/daily-summary');
+    $response = $this->getJson('/api/scans/daily-summary');
     $response->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.date', Carbon::yesterday()->toDateString())
@@ -182,7 +182,7 @@ test('scan controller supports multi food detection and stores all items in data
 
     // Send request with dummy image
     $file = \Illuminate\Http\UploadedFile::fake()->image('banana_meal.jpg');
-    $response = $this->postJson('/api/scan', [
+    $response = $this->postJson('/api/scans', [
         'image' => $file,
         'meal_type' => 'lunch',
         'serving_qty' => 1,

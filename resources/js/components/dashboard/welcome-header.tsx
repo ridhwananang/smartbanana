@@ -12,14 +12,13 @@ export default function WelcomeHeader({ userName }: WelcomeHeaderProps) {
                     <span>Halo, {userName.split(' ')[0]}!</span>
                 </h1>
                 <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-neutral-400">
-                    Pindai makanan Anda, pantau asupan gizi harian Anda, dan
-                    pertahankan pola hidup sehat secara cerdas.
+                    Pindai pisang Anda, pantau kematangan dan gizi harian secara cerdas.
                 </p>
             </div>
             {/* Active AI badge */}
-            <div className="inline-flex items-center gap-2 self-start rounded-full border border-amber-100 bg-amber-50/50 px-4 py-2 sm:self-center dark:border-amber-950/40 dark:bg-amber-950/20">
-                <span className="h-2 w-2 animate-ping rounded-full bg-amber-500"></span>
-                <span className="text-[10px] font-black tracking-widest text-amber-600 uppercase dark:text-amber-400">
+            <div className="inline-flex items-center gap-2 self-start rounded-full border border-yellow-100/50 bg-yellow-50/40 px-4 py-2 sm:self-center dark:border-yellow-950/20 dark:bg-yellow-950/10">
+                <span className="h-2 w-2 animate-ping rounded-full bg-yellow-500"></span>
+                <span className="text-[10px] font-black tracking-widest text-yellow-650 uppercase dark:text-yellow-400">
                     ASISTEN AI AKTIF
                 </span>
             </div>

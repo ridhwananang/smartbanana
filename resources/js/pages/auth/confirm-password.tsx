@@ -31,7 +31,7 @@ export default function ConfirmPassword() {
                         <div className="pt-2">
                             <PrimaryButton
                                 type="submit"
-                                className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase animate-pulse"
+                                className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase"
                                 disabled={processing}
                             >
                                 {processing ? 'Mengonfirmasi...' : 'Konfirmasi Sandi'}

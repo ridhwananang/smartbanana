@@ -13,14 +13,14 @@ export default function ApplicationLogo({
         <div className={`flex items-center gap-3 select-none ${className}`}>
             <div className="p-2 transition-transform duration-300">
                 <img
-                    src="/images/fav-logo.png"
+                    src="/images/banana.png"
                     alt="App Logo"
-                    className={`size-15 ${iconClassName}`}
+                    className={`h-18 w-23 ${iconClassName}`}
                 />
             </div>
-            <span className="text-2xl font-bold tracking-tighter uppercase italic">
-                NUTRI<span className="text-amber-500">VISION</span>
-            </span>
+            {/* <span className="text-2xl font-bold tracking-tighter uppercase italic">
+                SMART<span className="text-yellow-500">BANANA</span>
+            </span> */}
         </div>
     );
 }

@@ -20,7 +20,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     <div className="space-y-4">
                         <PrimaryButton
                             type="submit"
-                            className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase animate-pulse"
+                            className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase"
                             disabled={processing}
                         >
                             {processing ? 'Mengirim Ulang...' : 'Kirim Ulang Email Verifikasi'}

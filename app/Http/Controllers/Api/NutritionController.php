@@ -8,38 +8,23 @@ use Illuminate\Http\Request;
 
 class NutritionController extends Controller
 {
-    // GET /api/nutrition
-    public function index()
+    // GET /api/nutritions
+    public function index(Request $request)
     {
-        $nutrition = Nutrition::all();
+        $q = $request->query('q');
+
+        if ($q) {
+            $nutrition = Nutrition::where('item', 'like', "%{$q}%")
+                ->orWhere('brand', 'like', "%{$q}%")
+                ->get();
+        } else {
+            $nutrition = Nutrition::all();
+        }
 
         return response()->json([
             'status' => 'success',
             'total'  => $nutrition->count(),
             'data'   => $nutrition,
-        ]);
-    }
-
-    // GET /api/nutrition/search?q=burger
-    public function search(Request $request)
-    {
-        $q = $request->query('q');
-
-        if (!$q) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Parameter pencarian tidak boleh kosong',
-            ], 422);
-        }
-
-        $results = Nutrition::where('item', 'like', "%{$q}%")
-            ->orWhere('brand', 'like', "%{$q}%")
-            ->get();
-
-        return response()->json([
-            'status' => 'success',
-            'total'  => $results->count(),
-            'data'   => $results,
         ]);
     }
 

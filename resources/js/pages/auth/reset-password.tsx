@@ -72,7 +72,7 @@ export default function ResetPassword({ token, email }: Props) {
                         <div className="pt-2">
                             <PrimaryButton
                                 type="submit"
-                                className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase animate-pulse"
+                                className="flex w-full justify-center text-center text-xs font-black tracking-widest uppercase"
                                 disabled={processing}
                             >
                                 {processing ? 'Memproses...' : 'Atur Ulang Kata Sandi'}

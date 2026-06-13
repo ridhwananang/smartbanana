@@ -102,12 +102,31 @@ class ScanController extends Controller
         $totalFat = 0;
         $totalCarbs = 0;
         $totalProtein = 0;
+        $totalSugar = 0;
+        $totalFiber = 0;
+        $totalPotassium = 0;
+        $totalMagnesium = 0;
+        $totalVitaminC = 0;
+        $totalVitaminB6 = 0;
+        $totalSodium = 0;
+        $totalCalcium = 0;
+        $totalIron = 0;
 
         foreach ($savedNutritionItems as $nut) {
             $totalCalories += floatval($nut->calories) * floatval($servingQty);
             $totalFat += floatval($nut->fat) * floatval($servingQty);
             $totalCarbs += floatval($nut->carbs) * floatval($servingQty);
             $totalProtein += floatval($nut->protein) * floatval($servingQty);
+            
+            $totalSugar += floatval($nut->sugar ?? 0) * floatval($servingQty);
+            $totalFiber += floatval($nut->fiber ?? 0) * floatval($servingQty);
+            $totalPotassium += floatval($nut->potassium ?? 0) * floatval($servingQty);
+            $totalMagnesium += floatval($nut->magnesium ?? 0) * floatval($servingQty);
+            $totalVitaminC += floatval($nut->vitamin_c ?? 0) * floatval($servingQty);
+            $totalVitaminB6 += floatval($nut->vitamin_b6 ?? 0) * floatval($servingQty);
+            $totalSodium += floatval($nut->sodium ?? 0) * floatval($servingQty);
+            $totalCalcium += floatval($nut->calcium ?? 0) * floatval($servingQty);
+            $totalIron += floatval($nut->iron ?? 0) * floatval($servingQty);
         }
 
         // Kirimkan record pertama sebagai response primer agar cocok dengan interface React
@@ -120,6 +139,15 @@ class ScanController extends Controller
         $primaryNutrition->fat = $totalFat;
         $primaryNutrition->carbs = $totalCarbs;
         $primaryNutrition->protein = $totalProtein;
+        $primaryNutrition->sugar = $totalSugar;
+        $primaryNutrition->fiber = $totalFiber;
+        $primaryNutrition->potassium = $totalPotassium;
+        $primaryNutrition->magnesium = $totalMagnesium;
+        $primaryNutrition->vitamin_c = $totalVitaminC;
+        $primaryNutrition->vitamin_b6 = $totalVitaminB6;
+        $primaryNutrition->sodium = $totalSodium;
+        $primaryNutrition->calcium = $totalCalcium;
+        $primaryNutrition->iron = $totalIron;
 
         return response()->json([
             'status' => 'success',
@@ -131,7 +159,21 @@ class ScanController extends Controller
         ], 201);
     }
 
-    // GET /api/scan/{id}
+    // GET /api/scans
+    public function index(Request $request)
+    {
+        $history = Result::with('nutrition')
+            ->where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $history,
+        ]);
+    }
+
+    // GET /api/scans/{id}
     public function show(Request $request, $id)
     {
         $result = Result::with('nutrition')
@@ -151,8 +193,31 @@ class ScanController extends Controller
         ]);
     }
 
-    // DELETE /api/scan/{id}/reset
-    public function reset(Request $request, $id)
+    // GET /api/scans/daily-summary
+    public function dailySummary(Request $request)
+    {
+        $summaries = Result::join('nutrition', 'result.nutrition_id', '=', 'nutrition.id')
+            ->where('result.user_id', $request->user()->id)
+            ->selectRaw('
+                result.consumed_at as date,
+                SUM(nutrition.calories * result.serving_qty) as total_calories,
+                SUM(nutrition.protein * result.serving_qty) as total_protein,
+                SUM(nutrition.carbs * result.serving_qty) as total_carbs,
+                SUM(nutrition.fat * result.serving_qty) as total_fat,
+                COUNT(result.id) as scan_count
+            ')
+            ->groupBy('result.consumed_at')
+            ->orderBy('result.consumed_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $summaries,
+        ]);
+    }
+
+    // DELETE /api/scans/{id}
+    public function destroy(Request $request, $id)
     {
         $result = Result::where('user_id', $request->user()->id)->find($id);
 
@@ -167,7 +232,7 @@ class ScanController extends Controller
         if ($result->scan_image) {
             $physicalPath = public_path('storage/'.$result->scan_image);
             if (file_exists($physicalPath)) {
-                unlink($physicalPath);
+                @unlink($physicalPath);
             }
             if (Storage::disk('public')->exists($result->scan_image)) {
                 Storage::disk('public')->delete($result->scan_image);
@@ -178,7 +243,7 @@ class ScanController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Scan berhasil direset, silakan scan ulang',
+            'message' => 'Data scan berhasil dihapus',
         ]);
     }
 

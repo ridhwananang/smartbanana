@@ -33,7 +33,7 @@ export default function Welcome({
             onNavigate={onNavigate}
             onLogout={onLogout}
         >
-            <Head title="Kenali Nutrisi Dalam Sekejap - NutriVision" />
+            <Head title="Pindai Kematangan & Nutrisi Pisang Instan - SmartBanana" />
 
             <HeroSection handleScrollToSection={handleScrollToSection} />
 
