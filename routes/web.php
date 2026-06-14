@@ -102,12 +102,20 @@ Route::get('/test-storage', function () {
         $s3Files = 'Error listing s3 files: ' . $e->getMessage();
     }
     
+    $publicTemporaryUrl = 'Not supported';
+    try {
+        $publicTemporaryUrl = Storage::disk('public')->temporaryUrl('scans/1781466037_6a2f03b50d20c.png', now()->addMinutes(60));
+    } catch (\Exception $e) {
+        $publicTemporaryUrl = 'Error: ' . $e->getMessage();
+    }
+    
     return [
         'default_disk' => $disk,
         's3_config' => $s3Config,
         'public_config' => $publicConfig,
         's3_url_test' => Storage::disk('s3')->url('scans/test.png'),
         'public_url_test' => Storage::disk('public')->url('scans/test.png'),
+        'public_temporary_url_test' => $publicTemporaryUrl,
         'public_files' => $publicFiles,
         's3_files' => $s3Files,
     ];
