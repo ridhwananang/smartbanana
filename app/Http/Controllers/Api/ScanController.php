@@ -34,8 +34,8 @@ class ScanController extends Controller
         $file = $request->file('image');
         $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
         
-        // Tentukan disk storage: 's3' di production (Laravel Cloud), 'public' di local
-        $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
+        // Tentukan disk storage: 'public' (menggunakan S3/R2 di Laravel Cloud production, public folder di local)
+        $disk = 'public';
         
         Storage::disk($disk)->putFileAs('scans', $file, $fileName);
         $path = 'scans/'.$fileName;
@@ -243,7 +243,7 @@ class ScanController extends Controller
                     @unlink($physicalPath);
                 }
                 
-                $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
+                $disk = 'public';
                 if (Storage::disk($disk)->exists($rawImage)) {
                     Storage::disk($disk)->delete($rawImage);
                 }

@@ -26,11 +26,15 @@ class Result extends Model
             return $value;
         }
 
-        $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
-        $driver = config("filesystems.disks.{$disk}.driver", 'local');
+        try {
+            $disk = 'public';
+            $driver = config("filesystems.disks.{$disk}.driver", 'local');
 
-        if ($driver === 's3') {
-            return Storage::disk($disk)->temporaryUrl($value, now()->addHours(24));
+            if ($driver === 's3') {
+                return Storage::disk($disk)->temporaryUrl($value, now()->addHours(24));
+            }
+        } catch (\Exception $e) {
+            logger()->error('Error generating temporary URL: ' . $e->getMessage());
         }
 
         return $value;
