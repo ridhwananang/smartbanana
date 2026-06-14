@@ -60,7 +60,7 @@ Route::get('/storage/{path}', function ($path) {
     $driver = config("filesystems.disks.{$disk}.driver", 'local');
     
     if ($driver === 's3') {
-        return redirect(Storage::disk($disk)->url($path));
+        return redirect(Storage::disk($disk)->temporaryUrl($path, now()->addHours(24)));
     }
     
     if (Storage::disk('public')->exists($path)) {
@@ -69,56 +69,5 @@ Route::get('/storage/{path}', function ($path) {
     
     abort(404);
 })->where('path', '.*');
-
-Route::get('/test-storage', function () {
-    $disk = config('filesystems.default');
-    $s3Config = config('filesystems.disks.s3');
-    $publicConfig = config('filesystems.disks.public');
-    
-    if (isset($s3Config['key'])) {
-        $s3Config['key'] = substr($s3Config['key'], 0, 4) . '***';
-    }
-    if (isset($s3Config['secret'])) {
-        $s3Config['secret'] = '***';
-    }
-    if (isset($publicConfig['key'])) {
-        $publicConfig['key'] = substr($publicConfig['key'], 0, 4) . '***';
-    }
-    if (isset($publicConfig['secret'])) {
-        $publicConfig['secret'] = '***';
-    }
-    
-    $publicFiles = [];
-    try {
-        $publicFiles = Storage::disk('public')->files('scans');
-    } catch (\Exception $e) {
-        $publicFiles = 'Error listing public files: ' . $e->getMessage();
-    }
-    
-    $s3Files = [];
-    try {
-        $s3Files = Storage::disk('s3')->files('scans');
-    } catch (\Exception $e) {
-        $s3Files = 'Error listing s3 files: ' . $e->getMessage();
-    }
-    
-    $publicTemporaryUrl = 'Not supported';
-    try {
-        $publicTemporaryUrl = Storage::disk('public')->temporaryUrl('scans/1781466037_6a2f03b50d20c.png', now()->addMinutes(60));
-    } catch (\Exception $e) {
-        $publicTemporaryUrl = 'Error: ' . $e->getMessage();
-    }
-    
-    return [
-        'default_disk' => $disk,
-        's3_config' => $s3Config,
-        'public_config' => $publicConfig,
-        's3_url_test' => Storage::disk('s3')->url('scans/test.png'),
-        'public_url_test' => Storage::disk('public')->url('scans/test.png'),
-        'public_temporary_url_test' => $publicTemporaryUrl,
-        'public_files' => $publicFiles,
-        's3_files' => $s3Files,
-    ];
-});
 
 require __DIR__.'/settings.php';

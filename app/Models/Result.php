@@ -30,7 +30,7 @@ class Result extends Model
         $driver = config("filesystems.disks.{$disk}.driver", 'local');
 
         if ($driver === 's3') {
-            return Storage::disk($disk)->url($value);
+            return Storage::disk($disk)->temporaryUrl($value, now()->addHours(24));
         }
 
         return $value;
