@@ -235,15 +235,16 @@ class ScanController extends Controller
         }
 
         // Hapus foto dari storage
-        if ($result->scan_image) {
-            $physicalPath = public_path('storage/'.$result->scan_image);
+        $rawImage = $result->getRawOriginal('scan_image');
+        if ($rawImage) {
+            $physicalPath = public_path('storage/'.$rawImage);
             if (file_exists($physicalPath)) {
                 @unlink($physicalPath);
             }
             
             $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
-            if (Storage::disk($disk)->exists($result->scan_image)) {
-                Storage::disk($disk)->delete($result->scan_image);
+            if (Storage::disk($disk)->exists($rawImage)) {
+                Storage::disk($disk)->delete($rawImage);
             }
         }
 

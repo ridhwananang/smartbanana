@@ -100,7 +100,11 @@ export default function RecentScans({
                                             <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-slate-100 shadow-inner sm:h-20 sm:w-20 dark:border-neutral-800 dark:bg-neutral-900">
                                                 {scan.scan_image ? (
                                                     <img
-                                                        src={`/storage/${scan.scan_image}`}
+                                                        src={
+                                                            scan.scan_image.startsWith('http')
+                                                                ? scan.scan_image
+                                                                : `/storage/${scan.scan_image}`
+                                                        }
                                                         alt={
                                                             scan.nutrition
                                                                 ?.item || 'Food'

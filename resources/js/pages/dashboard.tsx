@@ -382,7 +382,11 @@ export default function Dashboard() {
                             <div className="space-y-4 text-center md:text-left">
                                 <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-inner sm:aspect-square dark:border-neutral-800 dark:bg-neutral-950">
                                     <img
-                                        src={`/storage/${scannedBanana.result.scan_image}`}
+                                        src={
+                                            scannedBanana.result.scan_image.startsWith('http')
+                                                ? scannedBanana.result.scan_image
+                                                : `/storage/${scannedBanana.result.scan_image}`
+                                        }
                                         alt="Scanned banana"
                                         className="h-full w-full object-cover"
                                         onError={(e) => {
