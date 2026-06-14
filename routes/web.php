@@ -73,17 +73,43 @@ Route::get('/storage/{path}', function ($path) {
 Route::get('/test-storage', function () {
     $disk = config('filesystems.default');
     $s3Config = config('filesystems.disks.s3');
+    $publicConfig = config('filesystems.disks.public');
+    
     if (isset($s3Config['key'])) {
         $s3Config['key'] = substr($s3Config['key'], 0, 4) . '***';
     }
     if (isset($s3Config['secret'])) {
         $s3Config['secret'] = '***';
     }
+    if (isset($publicConfig['key'])) {
+        $publicConfig['key'] = substr($publicConfig['key'], 0, 4) . '***';
+    }
+    if (isset($publicConfig['secret'])) {
+        $publicConfig['secret'] = '***';
+    }
+    
+    $publicFiles = [];
+    try {
+        $publicFiles = Storage::disk('public')->files('scans');
+    } catch (\Exception $e) {
+        $publicFiles = 'Error listing public files: ' . $e->getMessage();
+    }
+    
+    $s3Files = [];
+    try {
+        $s3Files = Storage::disk('s3')->files('scans');
+    } catch (\Exception $e) {
+        $s3Files = 'Error listing s3 files: ' . $e->getMessage();
+    }
+    
     return [
         'default_disk' => $disk,
         's3_config' => $s3Config,
+        'public_config' => $publicConfig,
         's3_url_test' => Storage::disk('s3')->url('scans/test.png'),
         'public_url_test' => Storage::disk('public')->url('scans/test.png'),
+        'public_files' => $publicFiles,
+        's3_files' => $s3Files,
     ];
 });
 
