@@ -41,8 +41,10 @@ class ScanController extends Controller
         $servingQty = $request->serving_qty ?? 1;
 
         foreach ($detectedItems as $item) {
+            // Ubah spasi menjadi tanda hubung agar cocok dengan database (misal: "banana unripe" -> "banana-unripe")
+            $key = str_replace(' ', '-', $item['key']);
+
             // Toleran terhadap typo "rape" vs "ripe"
-            $key = $item['key'];
             $altKey1 = str_replace('ripe', 'rape', $key);
             $altKey2 = str_replace('rape', 'ripe', $key);
 

@@ -27,3 +27,10 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Custom Ignores
+/model_pisang/*.keras
+/database/*.sqlite
+/raw_download_new.html
+/colab_cells.txt
+

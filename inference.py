@@ -2,162 +2,119 @@ import os
 import json
 import numpy as np
 import tensorflow as tf
-from huggingface_hub import snapshot_download
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-# ── Load model dari HF Hub ─────────────────────────────────────
-local_dir   = snapshot_download(repo_id="galihkjaya/nutrivision-models", local_dir_use_symlinks=False)
+# ── Konfigurasi & Variabel Global ───────────────────────────────
+MODEL_DIR = "model_pisang"
+MODEL_FILE = "cnn_kematangan_pisang.keras"
+CONFIG_FILE = "config.json"
 
-with open(f"{local_dir}/brand_map.json") as f:
-    BRAND_MAP = json.load(f)
-with open(f"{local_dir}/item_map.json") as f:
-    ITEM_MAP = json.load(f)
+MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILE)
+CONFIG_PATH = os.path.join(MODEL_DIR, CONFIG_FILE)
 
-BRAND_NAMES = sorted(BRAND_MAP.keys())
-ITEM_NAMES  = sorted(ITEM_MAP.keys())
-NUM_CLASSES = len(ITEM_NAMES)
+# Parameter Default (Akan diperbarui jika config.json terbaca)
+IMG_SIZE = (128, 128)
+CLASS_NAMES = ["banana unripe", "banana semi-ripe", "banana fully-ripe"]
 
-brand_model = tf.saved_model.load(f"{local_dir}/brand_saved_model")
-brand_infer = brand_model.signatures["serving_default"]
-
-menu_model  = tf.saved_model.load(f"{local_dir}/menu_saved_model")
-menu_infer  = menu_model.signatures["serving_default"]
-
-print(f"Models loaded | Brands: {BRAND_NAMES} | Items: {NUM_CLASSES} kelas")
-
-# ── Constants ──────────────────────────────────────────────────
-EFN_MEAN = tf.constant([0.485, 0.456, 0.406], dtype=tf.float32)
-EFN_STD  = tf.constant([0.229, 0.224, 0.225], dtype=tf.float32)
-
-STRIDES     = [8, 16, 32]
-IMG_SIZE    = 512
-FEAT_SHAPES = [(IMG_SIZE // s, IMG_SIZE // s) for s in STRIDES]
-
-PER_CLASS_THRESH = {
-    ITEM_NAMES.index("frenchfries")    : 0.20,
-    ITEM_NAMES.index("friedchicken")   : 0.20,
-    ITEM_NAMES.index("cola")           : 0.10,
-    ITEM_NAMES.index("nuggets")        : 0.18,
-    ITEM_NAMES.index("cheeseburger")   : 0.20,
-    ITEM_NAMES.index("chickenburger")  : 0.20,
-    ITEM_NAMES.index("beefburger")     : 0.20,
-    ITEM_NAMES.index("hashbrown")      : 0.20,
+# Pemetaan dari label AI ke key database gizi Laravel
+LABEL_MAPPING = {
+    "banana unripe": "banana-unripe",
+    "banana semi-ripe": "banana-semi-ripe",
+    "banana fully-ripe": "banana-fully-ripe"
 }
-DEFAULT_THRESH  = 0.15
-IOU_THRESH_NMS  = 0.2
 
-# ── Postprocess ────────────────────────────────
-def postprocess_fcos(cls_pred, reg_pred, ctr_pred, iou_thresh=IOU_THRESH_NMS, max_dets=10):
-    cls_pred = cls_pred[0].numpy()
-    reg_pred = reg_pred[0].numpy()
-    ctr_pred = ctr_pred[0].numpy()
+# Muat Konfigurasi jika ada
+if os.path.exists(CONFIG_PATH):
+    try:
+        with open(CONFIG_PATH) as f:
+            config = json.load(f)
+            if "img_size" in config:
+                IMG_SIZE = tuple(config["img_size"])
+            if "class_names" in config:
+                CLASS_NAMES = config["class_names"]
+        print(f"[OK] Konfigurasi dimuat: Ukuran Gambar={IMG_SIZE}, Kelas={CLASS_NAMES}")
+    except Exception as e:
+        print(f"[WARNING] Gagal membaca {CONFIG_PATH}, menggunakan default. Error: {e}")
 
-    centers = []
-    for (fh, fw), stride in zip(FEAT_SHAPES, STRIDES):
-        for i in range(fh):
-            for j in range(fw):
-                centers.append([(i + 0.5) / fh, (j + 0.5) / fw])
-    centers = np.array(centers)
+# Muat Model (Lazy Loading / Pengamanan agar FastAPI tetap bisa start)
+model = None
+model_error_msg = None
 
-    cy, cx = centers[:, 0], centers[:, 1]
-    l, t, r, b = reg_pred[:,0], reg_pred[:,1], reg_pred[:,2], reg_pred[:,3]
-
-    boxes = np.stack([
-        np.clip(cy - t, 0, 1),
-        np.clip(cx - l, 0, 1),
-        np.clip(cy + b, 0, 1),
-        np.clip(cx + r, 0, 1),
-    ], axis=1)
-
-    scores_all = np.max(cls_pred, axis=-1) * ctr_pred[:, 0]
-    labels_all = np.argmax(cls_pred, axis=-1)
-
-    keep = np.array([
-        scores_all[i] > PER_CLASS_THRESH.get(labels_all[i], DEFAULT_THRESH)
-        for i in range(len(scores_all))
-    ])
-    scores = scores_all[keep]
-    labels = labels_all[keep]
-    boxes  = boxes[keep]
-
-    if len(boxes) == 0:
-        return np.array([]), np.array([]), np.array([])
-
-    final_boxes, final_scores, final_labels = [], [], []
-    for cls_idx in range(NUM_CLASSES):
-        mask = labels == cls_idx
-        if not np.any(mask):
-            continue
-        sel = tf.image.non_max_suppression(
-            boxes[mask].astype(np.float32),
-            scores[mask].astype(np.float32),
-            max_output_size=max_dets,
-            iou_threshold=iou_thresh
-        ).numpy()
-        final_boxes.extend(boxes[mask][sel])
-        final_scores.extend(scores[mask][sel])
-        final_labels.extend([cls_idx] * len(sel))
-
-    if len(final_boxes) == 0:
-        return np.array([]), np.array([]), np.array([])
-
-    return np.array(final_boxes), np.array(final_scores), np.array(final_labels)
+try:
+    if os.path.exists(MODEL_PATH):
+        model = tf.keras.models.load_model(MODEL_PATH)
+        print(f"[OK] Model Kematangan Pisang berhasil dimuat dari: {MODEL_PATH}")
+    elif os.path.exists(MODEL_FILE):
+        model = tf.keras.models.load_model(MODEL_FILE)
+        MODEL_PATH = MODEL_FILE
+        print(f"[OK] Model Kematangan Pisang berhasil dimuat dari: {MODEL_FILE}")
+    else:
+        model_error_msg = (
+            f"File model '{MODEL_FILE}' tidak ditemukan di folder '{MODEL_DIR}/' "
+            "atau root proyek. Silakan unduh model .keras dari Google Drive Anda "
+            "dan letakkan ke folder 'model_pisang/'."
+        )
+        print(f"[WARNING] {model_error_msg}")
+except Exception as e:
+    model_error_msg = f"Gagal memuat model Keras. Error: {e}"
+    print(f"[ERROR] {model_error_msg}")
 
 
-# ── Predict ────────────────────────────────────────────────────
+# ── Inferensi / Predict Logic ──────────────────────────────────
 def predict(img_bytes: bytes):
-    img = tf.image.decode_image(img_bytes, channels=3, expand_animations=False)
+    global model, model_error_msg
+    if model is None:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "Model belum siap atau tidak ditemukan.",
+                "message": model_error_msg or "Silakan periksa folder 'model_pisang' Anda."
+            }
+        )
 
-    # Model 1 — Brand
-    img_brand = tf.image.resize(img, [224, 224])
-    img_brand = tf.cast(img_brand, tf.float32) / 255.0
-    img_brand = tf.expand_dims(img_brand, 0)
-    brand_out   = brand_infer(img_brand)
-    brand_pred  = list(brand_out.values())[0]
-    brand_idx   = int(tf.argmax(brand_pred[0]))
-    brand       = BRAND_NAMES[brand_idx]
-    brand_score = float(brand_pred[0][brand_idx])
+    # 1. Decode & Preprocess Gambar
+    try:
+        img = tf.image.decode_image(img_bytes, channels=3, expand_animations=False)
+        img = tf.image.resize(img, IMG_SIZE)
+        img = tf.cast(img, tf.float32) / 255.0  # Normalisasi piksel 0-1
+        img = tf.expand_dims(img, 0)            # Tambah dimensi batch (1, H, W, C)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Format gambar tidak didukung atau rusak. Error: {e}"
+        )
 
-    # Model 2 — Menu
-    img_menu = tf.image.resize(img, [512, 512])
-    img_menu = tf.cast(img_menu, tf.float32) / 255.0
-    img_menu = (img_menu - EFN_MEAN) / EFN_STD
-    img_menu = tf.expand_dims(img_menu, 0)
-    menu_out = menu_infer(img_menu)
-
-    cls_pred = menu_out["cls"]
-    reg_pred = menu_out["reg"]
-    ctr_pred = menu_out["ctr"]
-
-    boxes, scores, labels = postprocess_fcos(cls_pred, reg_pred, ctr_pred)
-
-    results = []
-    for box, score, label in zip(boxes, scores, labels):
-        results.append({
-            "label": f"{brand}-{ITEM_NAMES[label]}",
-            "score": round(float(score), 4),
-            "box"  : {
-                "y1": round(float(box[0]), 4),
-                "x1": round(float(box[1]), 4),
-                "y2": round(float(box[2]), 4),
-                "x2": round(float(box[3]), 4),
-                }
-            })
-
-    # Urutkan hasil deteksi berdasarkan skor kecocokan tertinggi ke terendah
-    results.sort(key=lambda x: x["score"], reverse=True)
+    # 2. Prediksi
+    try:
+        preds = model.predict(img)
+        probs = preds[0]
+        class_idx = int(np.argmax(probs))
+        confidence = float(probs[class_idx])
+        raw_label = CLASS_NAMES[class_idx]
+        
+        # Petakan label agar sesuai dengan database gizi Laravel
+        db_label = LABEL_MAPPING.get(raw_label, raw_label)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Terjadi kesalahan saat memproses model. Error: {e}"
+        )
 
     return {
-        "brand"      : brand,
-        "brand_score": round(brand_score, 4),
-        "items"      : results
+        "class": db_label,
+        "confidence": round(confidence, 4),
+        "items": [
+            {
+                "label": db_label,
+                "score": round(confidence, 4)
+            }
+        ]
     }
 
 
-# ── FastAPI ────────────────────────────────────────────────────
-from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI(title="NutriVision API")
+# ── FastAPI Server Setup ───────────────────────────────────────
+app = FastAPI(title="SmartBanana AI API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -169,19 +126,22 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {
-        "message" : "NutriVision API",
-        "brands"  : BRAND_NAMES,
-        "n_items" : NUM_CLASSES,
+        "message": "SmartBanana AI API",
+        "model_loaded": model is not None,
+        "model_path": MODEL_PATH if model is not None else None,
+        "classes": CLASS_NAMES,
+        "error": model_error_msg
     }
 
 @app.post("/predict")
 async def predict_endpoint(file: UploadFile = File(...)):
     img_bytes = await file.read()
-    result    = predict(img_bytes)
+    result = predict(img_bytes)
     return result
 
 
-# ── Run (untuk HF Spaces) ──────────────────────────────────────
+# ── Run Server ─────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
+    # Menjalankan server pada port 7860 sesuai konfigurasi default
     uvicorn.run(app, host="0.0.0.0", port=7860)

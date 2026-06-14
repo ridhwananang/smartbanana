@@ -1,0 +1,13 @@
+=== PETUNJUK PENYALINAN MODEL PISANG ===
+
+Untuk menjalankan server AI lokal, Anda perlu menyalin file hasil training di Google Colab ke dalam folder ini.
+
+1. Buka Google Drive Anda.
+2. Cari folder 'model_pisang' di Drive Anda (biasanya di MyDrive/model_pisang/).
+3. Unduh file berikut:
+   - cnn_kematangan_pisang.keras
+   - config.json
+4. Salin kedua file tersebut dan letakkan di dalam folder ini:
+   c:\Users\An\Herd\smartbanana\model_pisang\
+
+Setelah file tersebut diletakkan di sini, server FastAPI (inference.py) dapat mendeteksi tingkat kematangan pisang dengan sukses.

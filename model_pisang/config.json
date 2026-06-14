@@ -1,0 +1,13 @@
+{
+  "img_size": [
+    128,
+    128
+  ],
+  "class_names": [
+    "banana fully-ripe",
+    "banana semi-ripe",
+    "banana unripe"
+  ],
+  "num_classes": 3,
+  "val_accuracy": 0.516853928565979
+}
