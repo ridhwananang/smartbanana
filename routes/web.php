@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Api\ScanController;
