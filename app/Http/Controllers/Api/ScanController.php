@@ -33,7 +33,9 @@ class ScanController extends Controller
 
         $file = $request->file('image');
         $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-        $file->move(public_path('storage/scans'), $fileName);
+        
+        // Simpan gambar menggunakan disk storage 'public' agar kompatibel dengan Local dan S3 (Laravel Cloud)
+        Storage::disk('public')->putFileAs('scans', $file, $fileName);
         $path = 'scans/'.$fileName;
 
         $createdResults = [];
