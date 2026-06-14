@@ -237,14 +237,19 @@ class ScanController extends Controller
         // Hapus foto dari storage
         $rawImage = $result->getRawOriginal('scan_image');
         if ($rawImage) {
-            $physicalPath = public_path('storage/'.$rawImage);
-            if (file_exists($physicalPath)) {
-                @unlink($physicalPath);
-            }
-            
-            $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
-            if (Storage::disk($disk)->exists($rawImage)) {
-                Storage::disk($disk)->delete($rawImage);
+            try {
+                $physicalPath = public_path('storage/'.$rawImage);
+                if (file_exists($physicalPath)) {
+                    @unlink($physicalPath);
+                }
+                
+                $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
+                if (Storage::disk($disk)->exists($rawImage)) {
+                    Storage::disk($disk)->delete($rawImage);
+                }
+            } catch (\Exception $e) {
+                // Jangan biarkan error storage menghalangi penghapusan record di DB
+                logger()->error('Gagal menghapus file scan dari storage: ' . $e->getMessage());
             }
         }
 
