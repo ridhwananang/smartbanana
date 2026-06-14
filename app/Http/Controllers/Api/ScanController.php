@@ -34,8 +34,10 @@ class ScanController extends Controller
         $file = $request->file('image');
         $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
         
-        // Simpan gambar menggunakan disk storage 'public' agar kompatibel dengan Local dan S3 (Laravel Cloud)
-        Storage::disk('public')->putFileAs('scans', $file, $fileName);
+        // Tentukan disk storage: 's3' di production (Laravel Cloud), 'public' di local
+        $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
+        
+        Storage::disk($disk)->putFileAs('scans', $file, $fileName);
         $path = 'scans/'.$fileName;
 
         $createdResults = [];
@@ -238,8 +240,10 @@ class ScanController extends Controller
             if (file_exists($physicalPath)) {
                 @unlink($physicalPath);
             }
-            if (Storage::disk('public')->exists($result->scan_image)) {
-                Storage::disk('public')->delete($result->scan_image);
+            
+            $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
+            if (Storage::disk($disk)->exists($result->scan_image)) {
+                Storage::disk($disk)->delete($result->scan_image);
             }
         }
 
@@ -274,7 +278,8 @@ class ScanController extends Controller
         $fileName = $image->getClientOriginalName();
 
         // Ambil URL Colab API dari config (aman untuk Laravel config cache)
-        $aiApiUrl = rtrim(config('services.ai.url', 'http://localhost:7860'), '/');
+        $aiApiUrl = trim(config('services.ai.url', 'http://localhost:7860'));
+        $aiApiUrl = rtrim($aiApiUrl, '/');
         
         // Force HTTPS untuk domain eksternal selain localhost untuk menghindari 301 redirect POST -> GET (yang menyebabkan 405)
         if (str_starts_with($aiApiUrl, 'http://') && !str_contains($aiApiUrl, 'localhost') && !str_contains($aiApiUrl, '127.0.0.1')) {
