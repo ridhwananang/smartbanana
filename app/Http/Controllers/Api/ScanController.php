@@ -290,14 +290,30 @@ class ScanController extends Controller
                 return $this->parseResponse($response->json());
             }
 
+            // Log detail error ke storage/logs/laravel.log untuk mempermudah debugging
+            \Illuminate\Support\Facades\Log::error('AI API Error: Code ' . $response->status() . ', Body: ' . $response->body());
+
             if ($response->status() === 503 || $response->status() === 504) {
                 return [
                     ['error' => 'Server AI Colab sedang bersiap (Cold Start). Silakan tunggu 1-2 menit lalu coba unggah kembali.'],
                 ];
             }
 
+            // Ambil detail error dari FastAPI jika ada
+            $errorDetail = '';
+            try {
+                $jsonDecoded = $response->json();
+                if (isset($jsonDecoded['detail'])) {
+                    $errorDetail = ' - Detail: ' . (is_array($jsonDecoded['detail']) ? json_encode($jsonDecoded['detail']) : $jsonDecoded['detail']);
+                } else {
+                    $errorDetail = ' - Body: ' . substr($response->body(), 0, 150);
+                }
+            } catch (\Exception $e) {
+                $errorDetail = ' - Body: ' . substr($response->body(), 0, 150);
+            }
+
             return [
-                ['error' => 'Gagal menghubungi server AI Colab (Status: '.$response->status().')'],
+                ['error' => 'Gagal menghubungi server AI Colab (Status: '.$response->status().$errorDetail.')'],
             ];
 
         } catch (ConnectionException $e) {
