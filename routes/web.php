@@ -57,9 +57,10 @@ Route::prefix('api')->group(function () {
 // Route to serve/redirect public storage files (useful when public disk is mapped to S3 in production)
 Route::get('/storage/{path}', function ($path) {
     $disk = (config('filesystems.default') === 's3' || env('FILESYSTEM_DISK') === 's3') ? 's3' : 'public';
+    $driver = config("filesystems.disks.{$disk}.driver", 'local');
     
-    if ($disk === 's3') {
-        return redirect(Storage::disk('s3')->url($path));
+    if ($driver === 's3') {
+        return redirect(Storage::disk($disk)->url($path));
     }
     
     if (Storage::disk('public')->exists($path)) {
