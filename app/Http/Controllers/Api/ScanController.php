@@ -273,6 +273,12 @@ class ScanController extends Controller
 
         // Ambil URL Colab API dari variabel lingkungan (.env)
         $aiApiUrl = rtrim(env('AI_API_URL', 'http://localhost:7860'), '/');
+        
+        // Force HTTPS for Hugging Face Spaces to avoid 301 redirect POST -> GET (which results in 405 Method Not Allowed)
+        if (str_contains($aiApiUrl, '.hf.space') && str_starts_with($aiApiUrl, 'http://')) {
+            $aiApiUrl = 'https://' . substr($aiApiUrl, 7);
+        }
+
         $predictUrl = $aiApiUrl . '/predict';
 
         try {
