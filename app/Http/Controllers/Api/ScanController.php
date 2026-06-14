@@ -273,11 +273,11 @@ class ScanController extends Controller
         $filePath = $image->getPathname();
         $fileName = $image->getClientOriginalName();
 
-        // Ambil URL Colab API dari variabel lingkungan (.env)
-        $aiApiUrl = rtrim(env('AI_API_URL', 'http://localhost:7860'), '/');
+        // Ambil URL Colab API dari config (aman untuk Laravel config cache)
+        $aiApiUrl = rtrim(config('services.ai.url', 'http://localhost:7860'), '/');
         
-        // Force HTTPS for Hugging Face Spaces to avoid 301 redirect POST -> GET (which results in 405 Method Not Allowed)
-        if (str_contains($aiApiUrl, '.hf.space') && str_starts_with($aiApiUrl, 'http://')) {
+        // Force HTTPS untuk domain eksternal selain localhost untuk menghindari 301 redirect POST -> GET (yang menyebabkan 405)
+        if (str_starts_with($aiApiUrl, 'http://') && !str_contains($aiApiUrl, 'localhost') && !str_contains($aiApiUrl, '127.0.0.1')) {
             $aiApiUrl = 'https://' . substr($aiApiUrl, 7);
         }
 
@@ -285,8 +285,24 @@ class ScanController extends Controller
 
         try {
             $response = Http::timeout(90)
+                ->withOptions(['allow_redirects' => false]) // Jangan ikuti redirect otomatis agar kita bisa mendeteksi & melaporkannya
                 ->attach('file', file_get_contents($filePath), $fileName)
                 ->post($predictUrl);
+
+            // Jika response adalah redirect (301, 302, 307, dll)
+            if ($response->redirect()) {
+                $location = $response->header('Location');
+                \Illuminate\Support\Facades\Log::warning('AI API Redirected: Code ' . $response->status() . ' to ' . $location);
+                
+                // Ubah ke HTTPS jika redirect mengarah ke http
+                if (str_starts_with($location, 'http://') && !str_contains($location, 'localhost') && !str_contains($location, '127.0.0.1')) {
+                    $location = 'https://' . substr($location, 7);
+                }
+                
+                return [
+                    ['error' => 'Server AI dialihkan (Redirect ' . $response->status() . '). Harap ubah AI_API_URL di dashboard Laravel Cloud Anda menjadi URL tujuan: ' . rtrim(str_replace('/predict', '', $location), '/')],
+                ];
+            }
 
             if ($response->successful()) {
                 return $this->parseResponse($response->json());
