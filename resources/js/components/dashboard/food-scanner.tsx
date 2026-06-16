@@ -1,6 +1,5 @@
 import React from 'react';
 import { Loader2, Upload, Camera, Sparkles } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import InputLabel from '@/components/InputLabel';
 
@@ -47,182 +46,166 @@ export default function FoodScanner({
     onSubmit,
 }: FoodScannerProps) {
     return (
-        <div className="shadow-xl border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] bg-white dark:bg-neutral-950 overflow-hidden relative p-6 sm:p-8 flex flex-col justify-between">
-            {/* Visual glowing frame background */}
-            <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-yellow-100/30 dark:bg-yellow-950/10 opacity-40 blur-3xl"></div>
-            
-            <div>
-                <div className="pb-6">
-                    <h3 className="text-lg font-black tracking-tight text-slate-800 dark:text-white uppercase italic flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-pulse" />
-                        <span>Pindai Kematangan Pisang</span>
+        <div className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+                <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-white">
+                        <Sparkles className="h-4 w-4 text-amber-400" />
+                        Pindai Kematangan Pisang
                     </h3>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 mt-1">
-                        Unggah foto buah pisang Anda. AI akan mengidentifikasi tingkat kematangan dan kandungan nutrisi lengkapnya secara instan.
+                    <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+                        Upload foto pisang — AI akan mengenali tingkat kematangan &amp; nutrisinya.
                     </p>
                 </div>
-                
-                <form onSubmit={onSubmit}>
-                    <div className="space-y-4">
-                        {/* Upload Dropzone / Camera Streaming Area */}
-                        {isCameraActive ? (
-                            <div className="relative w-full rounded-2xl overflow-hidden bg-black flex flex-col items-center justify-center min-h-[260px] border-2 border-yellow-500">
-                                <video 
-                                    ref={videoRef} 
-                                    autoPlay 
-                                    playsInline 
-                                    className="w-full h-60 object-cover"
-                                />
-                                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 z-30">
-                                    <button 
-                                        type="button" 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            capturePhoto();
-                                        }}
-                                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-black text-xs tracking-wider uppercase rounded-2xl px-5 py-2.5 shadow-lg shadow-yellow-500/20 flex items-center gap-1.5 cursor-pointer active:scale-95 transition"
-                                    >
-                                        <Camera className="w-4 h-4 text-white" />
-                                        <span>Ambil Foto</span>
-                                    </button>
-                                    <button 
-                                        type="button" 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            stopCamera();
-                                        }}
-                                        className="bg-slate-900 hover:bg-slate-850 text-white font-black text-xs tracking-wider uppercase rounded-2xl px-5 py-2.5 shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition"
-                                    >
-                                        Batal
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div 
-                                onDragOver={handleDragOver}
-                                onDrop={handleDrop}
-                                onClick={() => fileInputRef.current?.click()}
-                                className={`border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden group ${
-                                    imagePreview 
-                                        ? 'border-yellow-400 bg-yellow-50/5 dark:bg-neutral-900/50' 
-                                        : 'border-slate-200 hover:border-yellow-400 dark:border-neutral-800 hover:bg-yellow-50/5 dark:hover:bg-neutral-900/10'
-                                }`}
+                <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    AI Aktif
+                </span>
+            </div>
+
+            <form onSubmit={onSubmit} className="flex flex-col gap-4">
+                {/* Upload / Camera Area */}
+                {isCameraActive ? (
+                    <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-black dark:border-neutral-800">
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            className="h-56 w-full object-cover"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 flex justify-center gap-2 bg-gradient-to-t from-black/60 to-transparent p-4">
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); capturePhoto(); }}
+                                className="cursor-pointer rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-amber-600 active:scale-95"
                             >
-                                {imagePreview ? (
-                                    <div className="relative w-full h-40 flex items-center justify-center">
-                                        <img 
-                                            src={imagePreview} 
-                                            alt="Food Preview" 
-                                            className="h-full rounded-2xl object-contain max-w-[85%] z-10 transition-transform group-hover:scale-102"
-                                        />
-                                        {/* AI Scanning Bar Overlay */}
-                                        {scanForm.processing && (
-                                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center rounded-2xl z-20">
-                                                <div 
-                                                    className="absolute left-0 right-0 h-1.5 bg-yellow-500 shadow-[0_0_12px_#eab308] w-full"
-                                                    style={{
-                                                        animation: 'scan-animation 2.2s ease-in-out infinite',
-                                                    }}
-                                                />
-                                                <Loader2 className="w-8 h-8 animate-spin text-white mb-2" />
-                                                <span className="text-[10px] font-black text-white tracking-widest uppercase animate-pulse">Analisis AI Berjalan...</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 flex flex-col items-center">
-                                        <div className="p-3.5 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-full inline-block group-hover:scale-105 transition-transform shadow-xs">
-                                            <Upload className="w-6 h-6 text-slate-500 dark:text-neutral-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-800 dark:text-white">Tarik & lepas foto buah pisang di sini, atau klik untuk memilih</p>
-                                            <p className="text-[10px] font-semibold text-slate-400 mt-1">Mendukung JPEG, PNG hingga 5 MB</p>
-                                        </div>
-                                        
-                                        <div className="flex items-center justify-center gap-2 pt-1">
-                                            <div className="h-[1px] w-8 bg-slate-200 dark:bg-neutral-800" />
-                                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Atau</span>
-                                            <div className="h-[1px] w-8 bg-slate-200 dark:bg-neutral-800" />
-                                        </div>
-         
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                startCamera();
-                                            }}
-                                            className="text-[10px] font-black tracking-wider uppercase flex items-center gap-1.5 bg-slate-900 text-white rounded-xl px-4 py-2 hover:bg-slate-800 active:scale-95 transition cursor-pointer"
-                                        >
-                                            <Camera className="w-3.5 h-3.5 text-yellow-400 animate-pulse" />
-                                            <span>Gunakan Kamera</span>
-                                        </button>
-                                    </div>
-                                )}
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef as any}
-                                    onChange={handleImageChange}
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-                            </div>
-                        )}
-         
-                        {/* Form Fields */}
-                        <div className="space-y-1.5 text-left w-full">
-                            <InputLabel htmlFor="meal_type" value="Waktu Makan" />
-                            <Select 
-                                value={scanForm.data.meal_type} 
-                                onValueChange={(val: any) => scanForm.setData('meal_type', val)}
+                                Ambil Foto
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); stopCamera(); }}
+                                className="cursor-pointer rounded-lg bg-white/20 px-4 py-2 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/30 active:scale-95"
                             >
-                                <SelectTrigger className="capitalize text-xs cursor-pointer rounded-2xl py-3 px-4 border-slate-200 bg-white shadow-xs focus:ring-yellow-500 focus:border-yellow-500 w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="breakfast" className="cursor-pointer">Sarapan</SelectItem>
-                                    <SelectItem value="lunch" className="cursor-pointer">Makan Siang</SelectItem>
-                                    <SelectItem value="dinner" className="cursor-pointer">Makan Malam</SelectItem>
-                                    <SelectItem value="snack" className="cursor-pointer">Cemilan</SelectItem>
-                                </SelectContent>
-                            </Select>
+                                Batal
+                            </button>
                         </div>
                     </div>
-
-                    <div className="border-t border-slate-100 dark:border-neutral-855 mt-6 pt-4 flex justify-between gap-4">
-                        {imagePreview && (
-                            <button 
-                                type="button" 
-                                onClick={() => {
-                                    setImagePreview(null);
-                                    scanForm.setData('image', null);
-                                    if (fileInputRef.current) fileInputRef.current.value = '';
-                                }}
-                                className="text-[10px] font-black tracking-wider uppercase border border-slate-200 rounded-xl px-4 py-2 hover:bg-slate-50 transition cursor-pointer"
-                                disabled={scanForm.processing}
-                            >
-                                Reset Gambar
-                            </button>
+                ) : (
+                    <div
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`relative flex min-h-[180px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
+                            imagePreview
+                                ? 'border-amber-300 bg-amber-50/30 dark:border-amber-700/40 dark:bg-amber-950/10'
+                                : 'border-slate-200 hover:border-amber-300 hover:bg-amber-50/20 dark:border-neutral-700 dark:hover:border-amber-700/40 dark:hover:bg-amber-950/10'
+                        }`}
+                    >
+                        {imagePreview ? (
+                            <div className="relative h-36 w-full">
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="h-full w-full rounded-lg object-contain"
+                                />
+                                {scanForm.processing && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-lg bg-black/50">
+                                        <div
+                                            className="absolute left-0 right-0 h-0.5 bg-amber-400"
+                                            style={{ animation: 'scan-animation 2.2s ease-in-out infinite' }}
+                                        />
+                                        <Loader2 className="h-7 w-7 animate-spin text-white" />
+                                        <span className="text-xs font-semibold text-white">Menganalisis...</span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 dark:border-neutral-700 dark:bg-neutral-900">
+                                    <Upload className="h-5 w-5 text-slate-400 dark:text-neutral-500" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-slate-700 dark:text-neutral-300">
+                                        Tarik &amp; lepas foto pisang di sini
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-slate-400 dark:text-neutral-500">
+                                        atau klik untuk memilih file (JPEG, PNG, maks. 5 MB)
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); startCamera(); }}
+                                    className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-white"
+                                >
+                                    <Camera className="h-3.5 w-3.5" />
+                                    Gunakan Kamera
+                                </button>
+                            </>
                         )}
-                        <button 
-                            type="submit" 
-                            disabled={scanForm.processing || !scanForm.data.image}
-                            className="ml-auto text-[10px] font-black tracking-wider uppercase shadow-lg shadow-yellow-500/20 bg-yellow-500 text-white rounded-2xl px-6 py-3.5 hover:bg-yellow-600 active:scale-95 disabled:opacity-50 disabled:scale-100 flex items-center gap-2 cursor-pointer transition"
-                        >
-                            {scanForm.processing ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Menganalisis...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Sparkles className="w-4 h-4 text-white fill-white" />
-                                    <span>Pindai Sekarang</span>
-                                </>
-                            )}
-                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef as any}
+                            onChange={handleImageChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
                     </div>
-                </form>
-            </div>
+                )}
+
+                {/* Form Fields */}
+                <div className="space-y-1.5">
+                    <InputLabel htmlFor="meal_type" value="Waktu Makan" />
+                    <Select
+                        value={scanForm.data.meal_type}
+                        onValueChange={(val: any) => scanForm.setData('meal_type', val)}
+                    >
+                        <SelectTrigger className="cursor-pointer rounded-xl border-slate-200 text-xs dark:border-neutral-700">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="breakfast" className="cursor-pointer">Sarapan</SelectItem>
+                            <SelectItem value="lunch" className="cursor-pointer">Makan Siang</SelectItem>
+                            <SelectItem value="dinner" className="cursor-pointer">Makan Malam</SelectItem>
+                            <SelectItem value="snack" className="cursor-pointer">Cemilan</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-neutral-800">
+                    {imagePreview && !scanForm.processing && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setImagePreview(null);
+                                scanForm.setData('image', null);
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                            }}
+                            className="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-900"
+                        >
+                            Reset Gambar
+                        </button>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={scanForm.processing || !scanForm.data.image}
+                        className="ml-auto flex cursor-pointer items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {scanForm.processing ? (
+                            <>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                Menganalisis...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="h-3.5 w-3.5" />
+                                Pindai Sekarang
+                            </>
+                        )}
+                    </button>
+                </div>
+            </form>
         </div>
     );
 }

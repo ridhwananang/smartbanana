@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Zap, Heart, ShieldCheck, Activity, Flame, Droplets, Sun, Bone, Battery } from 'lucide-react';
+import { ShieldCheck, Zap, Heart, Activity, Flame, Droplets, Sun, Bone, Battery, Sparkles } from 'lucide-react';
 
 interface Macro {
     value: number;
@@ -54,352 +54,198 @@ interface NutritionProgressProps {
     scans?: ScanItem[];
 }
 
+const fmt = (val: any, d = 1) => {
+    const n = parseFloat(val);
+    return isNaN(n) ? '0' : n.toFixed(d).replace(/\.0$/, '');
+};
+
+const bar = (val: number, goal: number) => Math.min(100, goal > 0 ? (val / goal) * 100 : 0);
+
 export default function NutritionProgress({
     consumed,
     calorieGoal,
     macros,
     scans = [],
 }: NutritionProgressProps) {
-    // Menghitung status gizi dominan hari ini untuk memberikan bio-feedback cerdas
-    const getBioFeedback = () => {
-        if (!macros) return null;
-        
-        const potassiumVal = macros.potassium?.value ?? 0;
-        const fiberVal = macros.fiber?.value ?? 0;
-        const sugarVal = macros.sugar?.value ?? 0;
-
-        if (potassiumVal > 0 || fiberVal > 0 || sugarVal > 0) {
-            // Jika serat lebih dominan dibanding gula (mengindikasikan lebih banyak pisang mentah/sedang)
-            if (fiberVal > sugarVal) {
-                return {
-                    title: "Gut Microbiome Fuel: Tinggi Pati Resisten!",
-                    desc: "Pisang yang Anda konsumsi kaya akan Pati Resisten (Resistant Starch) yang berperan sebagai prebiotik hebat untuk menutrisi bakteri baik di lambung serta menjaga stabilitas insulin.",
-                    colorClass: "from-emerald-500/20 to-emerald-600/5 dark:from-emerald-950/30 dark:to-emerald-950/5 border-emerald-500/20",
-                    icon: <ShieldCheck className="w-5 h-5 text-emerald-500 animate-pulse" />
-                };
-            }
-            // Jika gula lebih dominan (mengindikasikan pisang sangat matang)
-            if (sugarVal > 15) {
-                return {
-                    title: "High-Energy Boost: Sumber Energi Instan!",
-                    desc: "Pisang matang yang Anda konsumsi kaya akan gula sederhana alami yang cepat diserap otot. Sangat baik digunakan sebagai penambah tenaga sebelum berolahraga atau memulihkan stamina.",
-                    colorClass: "from-yellow-500/20 to-yellow-600/5 dark:from-yellow-950/30 dark:to-yellow-950/5 border-yellow-500/20",
-                    icon: <Zap className="w-5 h-5 text-yellow-500 animate-bounce" />
-                };
-            }
-            // Definisikan default nutrisi seimbang pisang
-            return {
-                title: "Balanced Superfood Intake: Nutrisi Seimbang!",
-                desc: "Tubuh Anda memperoleh suplai kalium yang optimal untuk melenturkan otot dan menyeimbangkan elektrolit, serta serat sehat untuk pencernaan harian yang prima.",
-                colorClass: "from-yellow-500/20 to-yellow-600/5 dark:from-yellow-950/30 dark:to-yellow-950/5 border-yellow-500/20",
-                icon: <Heart className="w-5 h-5 text-yellow-500 animate-pulse" />
-            };
-        }
-
-        return {
-            title: "Siap Menganalisis Nutrisi Pisang Anda!",
-            desc: "Unggah foto pisang pertama Anda hari ini di panel samping. Kami akan memecah gizi mikro dan makro otentik buah pisang untuk kebugaran tubuh Anda.",
-            colorClass: "from-slate-100 to-slate-50 dark:from-neutral-900/40 dark:to-neutral-950/5 border-slate-100 dark:border-neutral-850",
-            icon: <Activity className="w-5 h-5 text-slate-400" />
-        };
-    };
-
-    const feedback = getBioFeedback();
-
-    // 1. Hitung Rasio Distribusi Kematangan Pisang yang discan hari ini
-    let unripeCount = 0;
-    let semiRipeCount = 0;
-    let fullyRipeCount = 0;
-
+    // Hitung distribusi kematangan
+    let unripe = 0, semiRipe = 0, ripe = 0;
     scans.forEach((scan) => {
         const item = (scan.nutrition?.item || '').toLowerCase();
         const qty = parseFloat(scan.serving_qty as any) || 1;
-        if (item.includes('unripe') || item.includes('mentah')) {
-            unripeCount += qty;
-        } else if (item.includes('semi-rape') || item.includes('semi-ripe') || item.includes('sedang')) {
-            semiRipeCount += qty;
-        } else if (item.includes('fully-rape') || item.includes('fully-ripe') || item.includes('matang')) {
-            fullyRipeCount += qty;
-        }
+        if (item.includes('unripe') || item.includes('mentah')) unripe += qty;
+        else if (item.includes('semi-ripe') || item.includes('semi-rape') || item.includes('sedang')) semiRipe += qty;
+        else ripe += qty;
     });
+    const total = unripe + semiRipe + ripe;
 
-    const totalScannedBananas = unripeCount + semiRipeCount + fullyRipeCount;
+    const caloriePct = bar(consumed, calorieGoal);
 
-    const unripePct = totalScannedBananas > 0 ? (unripeCount / totalScannedBananas) * 100 : 0;
-    const semiRipePct = totalScannedBananas > 0 ? (semiRipeCount / totalScannedBananas) * 100 : 0;
-    const fullyRipePct = totalScannedBananas > 0 ? (fullyRipeCount / totalScannedBananas) * 100 : 0;
-
-    // Helper untuk render 3 Pilar Utama Pisang (Biochemical Pillars)
-    const renderPillarCard = (
-        name: string,
-        value: string | number,
-        tagline: string,
-        desc: string,
-        icon: React.ReactNode,
-        badgeClass: string,
-        borderHover: string
-    ) => {
-        const hasData = macros !== undefined;
-
-        return (
-            <div className={`relative overflow-hidden p-5 rounded-[2rem] border border-slate-100 dark:border-neutral-850/60 bg-slate-50/25 dark:bg-neutral-900/20 flex flex-col justify-between group hover:-translate-y-0.5 hover:shadow-md hover:border-yellow-450/20 dark:hover:border-yellow-500/10 duration-300 transition-all ${borderHover}`}>
-                <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 text-left">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${badgeClass}`}>
-                            {tagline}
-                        </span>
-                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-neutral-400 pt-1">
-                            {name}
-                        </h4>
-                    </div>
-                    <div className={`p-2.5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-100 dark:border-neutral-850 shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform`}>
-                        {icon}
-                    </div>
-                </div>
-
-                <div className="mt-4 text-left space-y-1.5">
-                    {hasData ? (
-                        <p className="text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none">
-                            {value}
-                        </p>
-                    ) : (
-                        <div className="h-6 w-20 bg-slate-200 dark:bg-neutral-800 rounded-md animate-pulse"></div>
-                    )}
-                    <p className="text-[9.5px] leading-relaxed font-semibold text-slate-500 dark:text-neutral-450 italic">
-                        {desc}
-                    </p>
-                </div>
-            </div>
-        );
+    // Bio-feedback berdasarkan kandungan nutrisi
+    const getBioStatus = () => {
+        if (!macros || (macros.fiber?.value ?? 0) === 0) return null;
+        const fiber = macros.fiber?.value ?? 0;
+        const sugar = macros.sugar?.value ?? 0;
+        if (fiber > sugar) return { label: 'Tinggi Serat & Pati Resisten', color: 'text-green-600 dark:text-green-400', dot: 'bg-green-500' };
+        if (sugar > 15) return { label: 'Tinggi Gula Alami — Energi Siap Pakai', color: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' };
+        return { label: 'Nutrisi Seimbang', color: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-500' };
     };
+    const bioStatus = getBioStatus();
 
-    // Helper untuk render Akumulasi Gizi Mikro Pisang Murni (tanpa batas persentase harian yang menyesatkan)
-    const renderMicroCard = (
-        name: string,
-        value: string | number,
-        benefit: string,
-        icon: React.ReactNode
-    ) => {
-        const hasData = macros !== undefined;
+    const mainMacros = [
+        {
+            label: 'Serat & Pati Resisten',
+            sublabel: 'Gut Health',
+            value: macros?.fiber ? `${fmt(macros.fiber.value)} g` : '0 g',
+            pct: bar(macros?.fiber?.value ?? 0, macros?.fiber?.goal ?? 25),
+            barColor: 'bg-green-500',
+            icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
+        },
+        {
+            label: 'Karbohidrat',
+            sublabel: 'Energi Utama',
+            value: macros?.carbs ? `${fmt(macros.carbs.value)} g` : '0 g',
+            pct: bar(macros?.carbs?.value ?? 0, macros?.carbs?.goal ?? 300),
+            barColor: 'bg-amber-500',
+            icon: <Zap className="h-4 w-4 text-amber-500" />,
+        },
+        {
+            label: 'Kalium',
+            sublabel: 'Elektrolit & Otot',
+            value: macros?.potassium ? `${Math.round(macros.potassium.value)} mg` : '0 mg',
+            pct: bar(macros?.potassium?.value ?? 0, macros?.potassium?.goal ?? 3500),
+            barColor: 'bg-red-400',
+            icon: <Heart className="h-4 w-4 text-red-400" />,
+        },
+    ];
 
-        return (
-            <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-neutral-850/50 bg-slate-50/15 dark:bg-neutral-900/10 backdrop-blur-xs flex flex-col justify-between gap-2.5 group hover:border-yellow-400/20 dark:hover:border-yellow-500/10 transition-all duration-300">
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                        <div className="p-1.5 rounded-xl bg-white dark:bg-neutral-950 border border-slate-50 dark:border-neutral-900 shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
-                            {icon}
-                        </div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest truncate">
-                            {name}
-                        </p>
-                    </div>
-                    {hasData ? (
-                        <p className="text-xs font-black text-slate-800 dark:text-white tracking-tight flex-shrink-0">
-                            {value}
-                        </p>
-                    ) : (
-                        <div className="h-4 w-10 bg-slate-200 dark:bg-neutral-800 rounded-xs animate-pulse"></div>
-                    )}
-                </div>
-                
-                <p className="text-[8.5px] leading-snug font-bold text-slate-450 dark:text-neutral-500 text-left">
-                    💡 {benefit}
-                </p>
-            </div>
-        );
-    };
+    const microNutrients = [
+        { label: 'Protein', value: macros?.protein ? `${fmt(macros.protein.value)} g` : '0 g', icon: <Flame className="h-3.5 w-3.5 text-orange-400" /> },
+        { label: 'Lemak', value: macros?.fat ? `${fmt(macros.fat.value)} g` : '0 g', icon: <Droplets className="h-3.5 w-3.5 text-blue-400" /> },
+        { label: 'Gula', value: macros?.sugar ? `${fmt(macros.sugar.value)} g` : '0 g', icon: <Activity className="h-3.5 w-3.5 text-pink-400" /> },
+        { label: 'Magnesium', value: macros?.magnesium ? `${Math.round(macros.magnesium.value)} mg` : '0 mg', icon: <Sparkles className="h-3.5 w-3.5 text-indigo-400" /> },
+        { label: 'Vit B6', value: macros?.vitamin_b6 ? `${fmt(macros.vitamin_b6.value, 2)} mg` : '0 mg', icon: <Sun className="h-3.5 w-3.5 text-purple-400" /> },
+        { label: 'Vit C', value: macros?.vitamin_c ? `${fmt(macros.vitamin_c.value)} mg` : '0 mg', icon: <Sun className="h-3.5 w-3.5 text-teal-400" /> },
+        { label: 'Kalsium', value: macros?.calcium ? `${Math.round(macros.calcium.value)} mg` : '0 mg', icon: <Bone className="h-3.5 w-3.5 text-sky-400" /> },
+        { label: 'Zat Besi', value: macros?.iron ? `${fmt(macros.iron.value, 2)} mg` : '0 mg', icon: <Battery className="h-3.5 w-3.5 text-cyan-400" /> },
+        { label: 'Natrium', value: macros?.sodium ? `${Math.round(macros.sodium.value)} mg` : '0 mg', icon: <ShieldCheck className="h-3.5 w-3.5 text-slate-400" /> },
+    ];
 
     return (
-        <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-100/80 bg-white p-6 shadow-xl sm:p-8 lg:col-span-3 dark:border-slate-800/10 dark:bg-neutral-950 flex flex-col gap-8">
-            {/* Visual glowing frame background */}
-            <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-yellow-100/30 opacity-40 blur-3xl dark:bg-yellow-950/10"></div>
-            <div className="pointer-events-none absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-emerald-100/20 opacity-30 blur-3xl dark:bg-emerald-950/10"></div>
-
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-950">
             {/* Header */}
-            <div>
-                <h3 className="flex items-center gap-2 text-lg font-black tracking-tight text-slate-800 uppercase italic dark:text-white">
-                    <Sparkles className="w-5 h-5 text-yellow-500 animate-pulse fill-yellow-500/15" />
-                    <span>Spektrum & Bio-Nutrisi Pisang Harian</span>
-                </h3>
-                <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-neutral-400">
-                    Wawasan bio-nutrisi, kadar kematangan, dan akumulasi gizi murni dari seluruh buah pisang yang Anda scan hari ini.
-                </p>
+            <div className="mb-5 flex items-start justify-between">
+                <div>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">Spektrum Nutrisi Harian</h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-neutral-400">
+                        Akumulasi gizi dari seluruh pisang yang di-scan hari ini.
+                    </p>
+                </div>
+                {bioStatus && (
+                    <span className="flex items-center gap-1.5 text-[10px] font-semibold">
+                        <span className={`h-1.5 w-1.5 rounded-full ${bioStatus.dot}`} />
+                        <span className={bioStatus.color}>{bioStatus.label}</span>
+                    </span>
+                )}
             </div>
 
-            {/* Cerdas Bio-feedback Card */}
-            {feedback && (
-                <div className={`p-5 rounded-[1.8rem] border flex gap-3.5 bg-gradient-to-tr ${feedback.colorClass} shadow-inner transition-all duration-300`}>
-                    <div className="p-3 bg-white dark:bg-neutral-950 border border-slate-100 dark:border-neutral-850 rounded-2xl flex-shrink-0 flex items-center justify-center h-11 w-11 shadow-sm">
-                        {feedback.icon}
-                    </div>
-                    <div className="text-left space-y-1">
-                        <h4 className="text-xs font-black tracking-wider uppercase text-slate-800 dark:text-white leading-tight">
-                            {feedback.title}
-                        </h4>
-                        <p className="text-[10px] text-slate-600 dark:text-neutral-300 font-semibold leading-relaxed">
-                            {feedback.desc}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                {/* LEFT: Kalori + Ripeness */}
+                <div className="lg:col-span-3 flex flex-col gap-4">
+                    {/* Calorie summary */}
+                    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-neutral-500">
+                            Kalori Hari Ini
                         </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Split Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                
-                {/* LEFT HERO: Ripeness Center */}
-                <div className="lg:col-span-4 flex flex-col items-center justify-between p-6 rounded-[2rem] border border-slate-100 dark:border-neutral-850/60 bg-gradient-to-b from-yellow-50/30 to-yellow-500/5 dark:from-neutral-900/20 dark:to-yellow-500/2 shadow-inner min-h-[300px]">
-                    
-                    <div className="w-full text-center">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Konsumsi Hari Ini
+                        <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-white">
+                            {consumed}
+                            <span className="ml-1 text-sm font-normal text-slate-400">kkal</span>
+                        </p>
+                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700">
+                            <div
+                                className="h-full rounded-full bg-amber-500 transition-all duration-700"
+                                style={{ width: `${caloriePct}%` }}
+                            />
+                        </div>
+                        <p className="mt-1 text-[10px] text-slate-400 dark:text-neutral-500">
+                            Target {calorieGoal} kkal / hari
                         </p>
                     </div>
 
-                    {/* Glowing circular display of scanned bananas */}
-                    <div className="relative flex items-center justify-center w-36 h-36 rounded-full bg-white dark:bg-neutral-950 border-4 border-yellow-400 shadow-lg shadow-yellow-400/10">
-                        <div className="absolute inset-2 rounded-full border border-dashed border-yellow-250 animate-spin opacity-45" style={{ animationDuration: '20s' }} />
-                        <div className="flex flex-col items-center justify-center text-center z-15">
-                            <span className="text-4xl" role="img" aria-label="banana">🍌</span>
-                            <span className="text-3xl font-black tracking-tight text-slate-800 dark:text-white leading-none mt-1">
-                                {totalScannedBananas}
-                            </span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1.5">
-                                Pisang
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Ripeness Ratio Stacked Progress Bar */}
-                    <div className="w-full mt-4 space-y-3">
-                        <div className="text-center">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                Spektrum Kematangan
-                            </p>
-                        </div>
-
-                        {totalScannedBananas > 0 ? (
-                            <>
-                                {/* Combined horizontal visual bar */}
-                                <div className="h-3 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-neutral-800 flex shadow-inner">
-                                    {unripePct > 0 && <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${unripePct}%` }} />}
-                                    {semiRipePct > 0 && <div className="h-full bg-yellow-500 transition-all duration-500" style={{ width: `${semiRipePct}%` }} />}
-                                    {fullyRipePct > 0 && <div className="h-full bg-amber-600 transition-all duration-500" style={{ width: `${fullyRipePct}%` }} />}
-                                </div>
-
-                                {/* Legend with counts */}
-                                <div className="flex justify-around items-center text-[8.5px] font-black uppercase tracking-wider text-slate-400">
-                                    {unripeCount > 0 && (
-                                        <div className="flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                            <span className="text-slate-600 dark:text-neutral-300">Mentah ({unripeCount})</span>
-                                        </div>
+                    {/* Ripeness distribution */}
+                    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-neutral-500 mb-3">
+                            Kematangan
+                        </p>
+                        {total > 0 ? (
+                            <div className="space-y-2">
+                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700 flex">
+                                    {unripe > 0 && (
+                                        <div className="h-full bg-green-500 transition-all" style={{ width: `${(unripe / total) * 100}%` }} />
                                     )}
-                                    {semiRipeCount > 0 && (
-                                        <div className="flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-                                            <span className="text-slate-600 dark:text-neutral-300">Sedang ({semiRipeCount})</span>
-                                        </div>
+                                    {semiRipe > 0 && (
+                                        <div className="h-full bg-yellow-400 transition-all" style={{ width: `${(semiRipe / total) * 100}%` }} />
                                     )}
-                                    {fullyRipeCount > 0 && (
-                                        <div className="flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                                            <span className="text-slate-600 dark:text-neutral-300">Matang ({fullyRipeCount})</span>
-                                        </div>
+                                    {ripe > 0 && (
+                                        <div className="h-full bg-amber-500 transition-all" style={{ width: `${(ripe / total) * 100}%` }} />
                                     )}
                                 </div>
-                            </>
+                                <div className="flex flex-col gap-1 text-[10px] text-slate-500 dark:text-neutral-400">
+                                    {unripe > 0 && <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-green-500" />Mentah: {unripe}</span>}
+                                    {semiRipe > 0 && <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />Sedang: {semiRipe}</span>}
+                                    {ripe > 0 && <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" />Matang: {ripe}</span>}
+                                </div>
+                            </div>
                         ) : (
-                            <p className="text-[10px] font-bold text-slate-400 italic text-center leading-relaxed">
-                                Silakan memindai pisang pertama Anda untuk melihat rasio kematangan.
+                            <p className="text-[10px] italic text-slate-400 dark:text-neutral-500">
+                                Belum ada scan hari ini.
                             </p>
                         )}
                     </div>
                 </div>
 
-                {/* RIGHT CARDS: Main Macros and Micronutrient Grid */}
-                <div className="lg:col-span-8 flex flex-col gap-6">
-                    
-                    {/* Primary Macronutrient Cards Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {renderPillarCard(
-                            'Pati Resisten & Serat',
-                            macros?.fiber ? `${macros.fiber.value.toFixed(1).replace('.0', '')} g` : '0 g',
-                            '🟢 Gut Health & Insulin',
-                            'Serat tinggi yang lambat dicerna, optimal untuk memelihara mikrobioma usus dan menjaga insulin tetap stabil.',
-                            <ShieldCheck className="w-5 h-5 text-emerald-500" />,
-                            'bg-emerald-500/10 text-emerald-600 dark:text-emerald-450',
-                            'hover:border-emerald-500/20 dark:hover:border-emerald-500/10'
-                        )}
-                        {renderPillarCard(
-                            'Energi Cepat & Karbo',
-                            macros?.carbs ? `${macros.carbs.value.toFixed(1).replace('.0', '')} g` : '0 g',
-                            '⚡ Muscle Fuel',
-                            'Gula alami glukosa & fruktosa yang mudah diserap, sangat cocok sebagai asupan penambah tenaga instan sebelum olahraga.',
-                            <Zap className="w-5 h-5 text-amber-500" />,
-                            'bg-amber-500/10 text-amber-600 dark:text-amber-450',
-                            'hover:border-amber-500/20 dark:hover:border-amber-500/10'
-                        )}
-                        {renderPillarCard(
-                            'Kalium & Elektrolit',
-                            macros?.potassium ? `${Math.round(macros.potassium.value)} mg` : '0 mg',
-                            '🫀 Muscle & Blood Pressure',
-                            'Elektrolit vital yang stabil di semua tingkat kematangan, esensial untuk mencegah kram otot dan mengatur sirkulasi cairan.',
-                            <Heart className="w-5 h-5 text-red-500 animate-pulse" />,
-                            'bg-red-500/10 text-red-650 dark:text-red-455',
-                            'hover:border-red-500/20 dark:hover:border-red-500/10'
-                        )}
+                {/* RIGHT: Macros + Micros */}
+                <div className="lg:col-span-9 flex flex-col gap-5">
+                    {/* 3 Main Macros */}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        {mainMacros.map((m) => (
+                            <div key={m.label} className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-neutral-800 dark:bg-neutral-900">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                        {m.icon}
+                                        <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400">{m.sublabel}</span>
+                                    </div>
+                                </div>
+                                <p className="text-xl font-bold text-slate-800 dark:text-white">{m.value}</p>
+                                <p className="text-[10px] text-slate-400 dark:text-neutral-500 mb-2">{m.label}</p>
+                                <div className="h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-neutral-700">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-700 ${m.barColor}`}
+                                        style={{ width: `${m.pct}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Secondary Micronutrients Compact Grid */}
+                    {/* Micro-nutrients grid */}
                     <div>
-                        <h4 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-3 text-left">
-                            Spektrum Mineral & Vitamin Esensial Lainnya
-                        </h4>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                            {renderMicroCard(
-                                'Magnesium',
-                                macros?.magnesium ? `${Math.round(macros.magnesium.value)} mg` : '0 mg',
-                                'Mendukung relaksasi otot dan saraf serta meningkatkan tidur pulas.',
-                                <Heart className="w-4 h-4 text-indigo-500" />
-                            )}
-                            {renderMicroCard(
-                                'Vitamin B6',
-                                macros?.vitamin_b6 ? `${macros.vitamin_b6.value.toFixed(2)} mg` : '0 mg',
-                                'Mendukung hormon serotonin (mood bahagia) & metabolisme protein.',
-                                <Sparkles className="w-4 h-4 text-purple-500" />
-                            )}
-                            {renderMicroCard(
-                                'Vitamin C',
-                                macros?.vitamin_c ? `${macros.vitamin_c.value.toFixed(1).replace('.0', '')} mg` : '0 mg',
-                                'Antioksidan tinggi untuk daya tahan tubuh & kesehatan kulit.',
-                                <Sun className="w-4 h-4 text-teal-500" />
-                            )}
-                            {renderMicroCard(
-                                'Kalsium',
-                                macros?.calcium ? `${Math.round(macros.calcium.value)} mg` : '0 mg',
-                                'Mendukung kekuatan tulang gigi & kelancaran kontraksi otot.',
-                                <Bone className="w-4 h-4 text-blue-500" />
-                            )}
-                            {renderMicroCard(
-                                'Zat Besi',
-                                macros?.iron ? `${macros.iron.value.toFixed(2)} mg` : '0 mg',
-                                'Membantu pembentukan sel darah merah & mencegah anemia.',
-                                <Battery className="w-4 h-4 text-cyan-500" />
-                            )}
-                            {renderMicroCard(
-                                'Natrium',
-                                macros?.sodium ? `${Math.round(macros.sodium.value)} mg` : '0 mg',
-                                'Pisang sangat rendah garam alami sehingga sangat aman bagi penderita darah tinggi.',
-                                <ShieldCheck className="w-4 h-4 text-slate-500" />
-                            )}
+                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-neutral-500">
+                            Mineral &amp; Vitamin
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                            {microNutrients.map((m) => (
+                                <div key={m.label} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        {m.icon}
+                                        <span className="truncate text-[10px] text-slate-500 dark:text-neutral-400">{m.label}</span>
+                                    </div>
+                                    <span className="ml-2 flex-shrink-0 text-[10px] font-semibold text-slate-700 dark:text-neutral-300">{m.value}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
