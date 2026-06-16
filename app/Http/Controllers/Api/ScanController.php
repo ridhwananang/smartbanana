@@ -34,8 +34,12 @@ class ScanController extends Controller
         $file = $request->file('image');
         $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
         
-        // Tentukan disk storage: 'public' (menggunakan S3/R2 di Laravel Cloud production, public folder di local)
-        $disk = 'public';
+        // Gunakan disk yang dikonfigurasi di env (FILESYSTEM_DISK)
+        // Di Laravel Cloud production: s3 | Di local/Herd: local → fallback public
+        $disk = config('filesystems.default', 'public');
+        if ($disk === 'local') {
+            $disk = 'public';
+        }
         
         Storage::disk($disk)->putFileAs('scans', $file, $fileName);
         $path = 'scans/'.$fileName;
@@ -238,17 +242,22 @@ class ScanController extends Controller
         $rawImage = $result->getRawOriginal('scan_image');
         if ($rawImage) {
             try {
+                // Gunakan disk yang sama dengan saat upload
+                $disk = config('filesystems.default', 'public');
+                if ($disk === 'local') {
+                    $disk = 'public';
+                }
+
+                if (Storage::disk($disk)->exists($rawImage)) {
+                    Storage::disk($disk)->delete($rawImage);
+                }
+
+                // Juga coba hapus dari local public jika ada (untuk file lama sebelum migrasi)
                 $physicalPath = public_path('storage/'.$rawImage);
                 if (file_exists($physicalPath)) {
                     @unlink($physicalPath);
                 }
-                
-                $disk = 'public';
-                if (Storage::disk($disk)->exists($rawImage)) {
-                    Storage::disk($disk)->delete($rawImage);
-                }
             } catch (\Exception $e) {
-                // Jangan biarkan error storage menghalangi penghapusan record di DB
                 logger()->error('Gagal menghapus file scan dari storage: ' . $e->getMessage());
             }
         }

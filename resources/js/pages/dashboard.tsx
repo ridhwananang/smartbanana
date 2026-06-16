@@ -292,23 +292,27 @@ export default function Dashboard() {
         <>
             <Head title="Dashboard - SmartBanana" />
 
-            {/* Custom Scan Keyframe animation stylesheet */}
-            <style
-                dangerouslySetInnerHTML={{
-                    __html: `
-                @keyframes scan-animation {
-                    0%, 100% { top: 0%; opacity: 0.8; }
-                    50% { top: 100%; opacity: 0.3; }
-                }
-            `,
-                }}
-            />
+            {/* Scan animation */}
+            <style dangerouslySetInnerHTML={{ __html: `@keyframes scan-animation { 0%,100%{top:0%;opacity:.8} 50%{top:100%;opacity:.3} }` }} />
 
-            <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 overflow-x-auto rounded-xl p-6">
-                {/* Header Welcome */}
-                {/* <WelcomeHeader userName={auth.user.name} /> */}
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6">
+                {/* Page Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-lg font-bold text-slate-800 dark:text-white">
+                            Halo, {auth.user.name.split(' ')[0]}! 👋
+                        </h1>
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-neutral-400">
+                            Analisis gizi &amp; klasifikasi kematangan pisang berbasis AI.
+                        </p>
+                    </div>
+                    <span className="flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[10px] font-semibold text-amber-600 dark:border-amber-900/30 dark:bg-amber-950/20 dark:text-amber-400">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                        Bio-Engine Aktif
+                    </span>
+                </div>
 
-                {/* Row 1: Scan AI Form and Recent Scans list */}
+                {/* Row 1: Scanner + Recent Scans */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <FoodScanner
                         scanForm={scanForm}
@@ -325,7 +329,6 @@ export default function Dashboard() {
                         handleDrop={handleDrop}
                         onSubmit={handleScanSubmit}
                     />
-
                     <RecentScans
                         scans={dashboardData?.recent_scans ?? []}
                         totalScans={dashboardData?.summary?.scan_count ?? 0}
@@ -333,24 +336,22 @@ export default function Dashboard() {
                     />
                 </div>
 
-                {/* Row 2: Summary ring and macros */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <NutritionProgress
-                        consumed={consumed}
-                        calorieGoal={dashboardData?.calorie_goal ?? 2000}
-                        macros={dashboardData?.macros}
-                        scans={dashboardData?.recent_scans ?? []}
-                    />
-                </div>
+                {/* Row 2: Nutrition Spectrum */}
+                <NutritionProgress
+                    consumed={consumed}
+                    calorieGoal={dashboardData?.calorie_goal ?? 2000}
+                    macros={dashboardData?.macros}
+                    scans={dashboardData?.recent_scans ?? []}
+                />
 
-                {/* Row 3: AI Advice and Tips */}
+                {/* Row 3: AI Advice */}
                 <BananaAiAdvice scans={dashboardData?.recent_scans ?? []} />
             </div>
 
             {/* Scanned Banana Full Nutrition Details Modal Overlay */}
             {scannedBanana && (
                 <div className="fixed inset-0 z-[100] flex animate-in items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md duration-200 fade-in">
-                    <div className="relative flex max-h-[90vh] w-full max-w-2xl animate-in flex-col gap-6 overflow-y-auto rounded-[2.5rem] border border-slate-100 bg-white p-6 text-left shadow-2xl duration-200 zoom-in-95 sm:p-8 dark:border-neutral-800 dark:bg-neutral-900">
+                    <div className="relative flex max-h-[90vh] w-full max-w-2xl animate-in flex-col gap-6 overflow-y-auto rounded-3xl border border-slate-100 bg-white p-6 text-left shadow-2xl duration-200 zoom-in-95 sm:p-8 dark:border-neutral-800 dark:bg-neutral-900">
                         {/* Header */}
                         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-neutral-800">
                             <div className="flex items-center gap-3">
@@ -382,11 +383,7 @@ export default function Dashboard() {
                             <div className="space-y-4 text-center md:text-left">
                                 <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-inner sm:aspect-square dark:border-neutral-800 dark:bg-neutral-950">
                                     <img
-                                        src={
-                                            scannedBanana.result.scan_image.startsWith('http')
-                                                ? scannedBanana.result.scan_image
-                                                : `/storage/${scannedBanana.result.scan_image}`
-                                        }
+                                        src={scannedBanana.result.scan_image ?? '/images/placeholder-food.png'}
                                         alt="Scanned banana"
                                         className="h-full w-full object-cover"
                                         onError={(e) => {
@@ -395,10 +392,10 @@ export default function Dashboard() {
                                         }}
                                     />
                                     <div className="absolute top-3 left-3 rounded-full bg-yellow-500/90 px-3 py-1 text-[9px] font-black tracking-widest text-white uppercase shadow-md backdrop-blur-xs">
-                                        {Math.round(
+                                        {(
                                             scannedBanana.result.confidence *
-                                                100,
-                                        )}
+                                            100
+                                        ).toFixed(1)}
                                         % Match
                                     </div>
                                 </div>

@@ -1,7 +1,7 @@
 {
   "img_size": [
-    128,
-    128
+    224,
+    224
   ],
   "class_names": [
     "banana fully-ripe",
@@ -9,5 +9,7 @@
     "banana unripe"
   ],
   "num_classes": 3,
-  "val_accuracy": 0.516853928565979
+  "val_accuracy": 0.5730336904525757,
+  "model_type": "mobilenetv2",
+  "preprocessing": "mobilenet_v2"
 }
